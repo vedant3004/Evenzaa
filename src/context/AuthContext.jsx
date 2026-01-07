@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { findUser } from "../utils/userDB"
+import { useRouter } from "next/navigation"
 
 const AuthContext = createContext()
 
@@ -10,7 +11,11 @@ export function AuthProvider({ children }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  // 🔁 Load saved user/vendor
+  const router = useRouter()
+
+  // =====================================
+  // LOAD USER / VENDOR ON PAGE REFRESH
+  // =====================================
   useEffect(() => {
     const savedUser = localStorage.getItem("eventzaa_user")
     const savedVendor = localStorage.getItem("eventzaa_vendor")
@@ -24,10 +29,35 @@ export function AuthProvider({ children }) {
     setLoading(false)
   }, [])
 
-  // =======================
+  // =====================================
+  // 🔥 AUTO REDIRECT AFTER LOGIN (MAIN FIX)
+  // =====================================
+  useEffect(() => {
+    if (!user) return
+
+    const redirect = localStorage.getItem("redirectAfterLogin")
+    if (redirect) {
+      localStorage.removeItem("redirectAfterLogin")
+      router.push(redirect)
+    }
+  }, [user, router])
+
+  // =====================================
+  // 🔐 REQUIRE LOGIN (BOOK NOW GUARD)
+  // =====================================
+  const requireLogin = (redirectTo) => {
+    if (!user) {
+      localStorage.setItem("redirectAfterLogin", redirectTo)
+      setOpen(true)
+      return false
+    }
+    return true
+  }
+
+  // =====================================
   // CUSTOMER LOGIN
-  // =======================
-  const loginUser = (data) => {
+  // =====================================
+  const login = (data) => {
     const found = findUser(data.email, data.password)
 
     if (!found) {
@@ -47,14 +77,9 @@ export function AuthProvider({ children }) {
     setOpen(false)
   }
 
-  // 🔁 COMMON LOGIN (for AuthPopup)
-  const login = (data) => {
-    loginUser(data)
-  }
-
-  // =======================
+  // =====================================
   // VENDOR LOGIN
-  // =======================
+  // =====================================
   const loginVendor = (data) => {
     const vendors = JSON.parse(localStorage.getItem("vendors") || "[]")
 
@@ -76,40 +101,17 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("eventzaa_user")
 
     setUser(vendorData)
+    setOpen(false)
   }
 
-  // =======================
-  // VENDOR REGISTER
-  // =======================
-  const registerVendor = (data) => {
-    const vendors = JSON.parse(localStorage.getItem("vendors") || "[]")
-
-    const exists = vendors.find((v) => v.email === data.email)
-    if (exists) {
-      alert("Vendor already registered with this email")
-      return
-    }
-
-    const newVendor = {
-      id: Date.now(),
-      ...data,
-      role: "vendor",
-      createdAt: new Date().toLocaleString(),
-    }
-
-    localStorage.setItem("vendors", JSON.stringify([...vendors, newVendor]))
-    localStorage.setItem("eventzaa_vendor", JSON.stringify(newVendor))
-
-    setUser(newVendor)
-  }
-
-  // =======================
-  // LOGOUT
-  // =======================
+  // =====================================
+  // LOGOUT (USER / VENDOR)
+  // =====================================
   const logout = () => {
     localStorage.removeItem("eventzaa_user")
     localStorage.removeItem("eventzaa_vendor")
     setUser(null)
+    router.push("/")
   }
 
   return (
@@ -120,16 +122,12 @@ export function AuthProvider({ children }) {
         open,
         setOpen,
 
-        // customer
-        loginUser,
+        // 🔥 IMPORTANT
+        requireLogin,
 
-        // vendor
-        loginVendor,
-        registerVendor,
-
-        // common popup
+        // auth
         login,
-
+        loginVendor,
         logout,
       }}
     >

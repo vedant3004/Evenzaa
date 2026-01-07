@@ -15,16 +15,40 @@ export default function VendorsPage() {
   const loc = params.get("loc")
 
   const list = vendors.filter((v) => {
-    const matchCat = cat ? v.category?.toLowerCase() === cat.toLowerCase() : true
-    const matchLoc = loc ? v.location.toLowerCase().includes(loc.toLowerCase()) : true
+    const matchCat = cat
+      ? v.category?.toLowerCase() === cat.toLowerCase()
+      : true
+
+    const matchLoc = loc
+      ? v.location.toLowerCase().includes(loc.toLowerCase())
+      : true
+
     const matchQ = q
       ? v.name.toLowerCase().includes(q.toLowerCase()) ||
         v.service.toLowerCase().includes(q.toLowerCase()) ||
-        v.category.toLowerCase().includes(q.toLowerCase())
+        v.category?.toLowerCase().includes(q.toLowerCase())
       : true
 
     return matchCat && matchLoc && matchQ
   })
+
+  // 🔥 GUARANTEED WORKING BOOK NOW
+  const handleBookNow = (vendor) => {
+    // save intent FIRST
+    localStorage.setItem(
+      "redirectAfterLogin",
+      `/bookings/${vendor.slug}`
+    )
+
+    // if not logged in → OPEN POPUP ONLY
+    if (!user) {
+      setOpen(true)
+      return
+    }
+
+    // logged in → direct booking page
+    router.push(`/bookings/${vendor.slug}`)
+  }
 
   return (
     <div className="pt-32 pb-20 max-w-7xl mx-auto px-4">
@@ -46,8 +70,15 @@ export default function VendorsPage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {list.map((v) => (
-          <div key={v.id} className="bg-white p-8 rounded-2xl shadow-lg flex flex-col">
-            <img src={v.image} className="h-48 w-full object-cover rounded-xl mb-4"/>
+          <div
+            key={v.id}
+            className="bg-white p-8 rounded-2xl shadow-lg flex flex-col"
+          >
+            <img
+              src={v.image}
+              className="h-48 w-full object-cover rounded-xl mb-4"
+              alt={v.name}
+            />
 
             <h3 className="font-bold text-xl">{v.name}</h3>
             <p className="text-gray-500">{v.service}</p>
@@ -58,10 +89,16 @@ export default function VendorsPage() {
             </div>
 
             <div className="flex justify-between mt-4 mb-6">
-              <span className="text-pink-600 font-bold">₹{v.price}</span>
-              <span className="text-yellow-500">⭐ {v.rating}</span>
+              <span className="text-pink-600 font-bold">
+                ₹{v.price}
+              </span>
+              <span className="text-yellow-500 flex items-center gap-1">
+                <Star size={16} fill="currentColor" />
+                {v.rating}
+              </span>
             </div>
 
+            {/* VIEW DETAILS */}
             <button
               onClick={() => router.push(`/vendors/${v.slug}`)}
               className="btn-primary mb-2"
@@ -69,8 +106,10 @@ export default function VendorsPage() {
               View Details
             </button>
 
+            {/* 🔥 BOOK NOW – FIXED */}
             <button
-              onClick={() => !user ? setOpen(true) : router.push(`/vendors/${v.slug}`)}
+              type="button"
+              onClick={() => handleBookNow(v)}
               className="btn-primary"
             >
               Book Now

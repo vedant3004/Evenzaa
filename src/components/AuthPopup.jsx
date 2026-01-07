@@ -1,34 +1,62 @@
 "use client"
+
 import { useAuth } from "../context/AuthContext"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { saveUser } from "../utils/userDB"
+import { useRouter } from "next/navigation"
 
 export default function AuthPopup() {
-  const { open, setOpen, login } = useAuth()
+  const { open, setOpen, login, user } = useAuth()
+  const router = useRouter()
+
   const [mode, setMode] = useState("login")
-  const [form, setForm] = useState({})
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    name: "",
+  })
+
+  // ✅ REDIRECT AFTER LOGIN (PROPER WAY)
+  useEffect(() => {
+    if (!user) return
+
+    const redirect = localStorage.getItem("redirectAfterLogin")
+
+    setOpen(false)
+
+    if (redirect) {
+      localStorage.removeItem("redirectAfterLogin")
+      router.push(redirect)
+    }
+  }, [user])
 
   if (!open) return null
 
   // ================= REGISTER =================
   const register = () => {
-    if (!form.email || !form.password || !form.name)
-      return alert("Fill all fields")
+    if (!form.email || !form.password || !form.name) {
+      alert("Fill all fields")
+      return
+    }
 
     const ok = saveUser(form)
 
-    if (!ok)
-      return alert("User already registered. Please login.")
+    if (!ok) {
+      alert("User already registered. Please login.")
+      return
+    }
 
-    login(form) // auto login after register
+    login(form) // 🔥 redirect handled in useEffect
   }
 
   // ================= LOGIN =================
   const doLogin = () => {
-    if (!form.email || !form.password)
-      return alert("Enter email & password")
+    if (!form.email || !form.password) {
+      alert("Enter email & password")
+      return
+    }
 
-    login(form)
+    login(form) // 🔥 redirect handled in useEffect
   }
 
   return (
@@ -44,24 +72,32 @@ export default function AuthPopup() {
           {mode === "register" && (
             <input
               placeholder="Full Name"
-              onChange={e => setForm({ ...form, name: e.target.value })}
+              value={form.name}
+              onChange={(e) =>
+                setForm({ ...form, name: e.target.value })
+              }
               className="input"
             />
           )}
 
           <input
             placeholder="Email"
-            onChange={e => setForm({ ...form, email: e.target.value })}
+            value={form.email}
+            onChange={(e) =>
+              setForm({ ...form, email: e.target.value })
+            }
             className="input"
           />
 
           <input
             placeholder="Password"
             type="password"
-            onChange={e => setForm({ ...form, password: e.target.value })}
+            value={form.password}
+            onChange={(e) =>
+              setForm({ ...form, password: e.target.value })
+            }
             className="input"
           />
-
         </div>
 
         <button
@@ -73,7 +109,8 @@ export default function AuthPopup() {
 
         <p className="text-center mt-3 text-sm">
           {mode === "login" ? (
-            <>New here?
+            <>
+              New here?
               <button
                 onClick={() => setMode("register")}
                 className="text-pink-500 ml-1"
@@ -82,7 +119,8 @@ export default function AuthPopup() {
               </button>
             </>
           ) : (
-            <>Already have account?
+            <>
+              Already have account?
               <button
                 onClick={() => setMode("login")}
                 className="text-pink-500 ml-1"
