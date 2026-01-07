@@ -1,42 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===============================
+   GLOBAL THEME VARIABLES
+================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f8f9fc;
+  --surface: #ffffff;
+  --surface-soft: #fdf2f8;
+  --text: #111827;
+  --muted-text: #4b5563;
+  --border: #e5e7eb;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ===============================
+   DARK MODE VARIABLES
+================================ */
+.dark {
+  --bg: #020617;
+  --surface: #020617;
+  --surface-soft: #020617;
+  --text: #e5e7eb;
+  --muted-text: #9ca3af;
+  --border: #1f2933;
 }
 
+/* ===============================
+   BASE STYLES
+================================ */
 html,
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
+  min-height: 100%;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* ===============================
+   SMOOTH SCROLL
+================================ */
 * {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+  scroll-behavior: smooth;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* ===============================
+   SCROLLBAR
+================================ */
+::-webkit-scrollbar {
+  width: 10px;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #a855f7, #ec4899);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-soft);
+}
+
+/* ===============================
+   FORM ELEMENTS
+================================ */
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+.input::placeholder {
+  color: var(--muted-text);
+}
+
+.input:focus {
+  outline: none;
+  border-color: #ec4899;
+  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.3);
+}
+
+/* ===============================
+   BUTTONS
+================================ */
+.btn-primary {
+  background-image: linear-gradient(to right, #a855f7, #ec4899);
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
 }
