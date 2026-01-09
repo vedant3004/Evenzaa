@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react"
 import { BarChart3, Wallet, Crown, X, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "../../../context/AuthContext"   // 🔥 ADDED
 
 export default function VendorDash() {
   const router = useRouter()
+  const { user, logout } = useAuth()                     // 🔥 SYNC WITH NAVBAR
 
   const [vendor, setVendor] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -18,25 +20,23 @@ export default function VendorDash() {
     description: "",
   })
 
-  // ✅ SAFE localStorage access
+  // 🔥 LOAD FROM AUTH CONTEXT (NOT RAW LOCALSTORAGE)
   useEffect(() => {
-    const stored = localStorage.getItem("evenzaa_vendor")
-    if (stored) {
-      const v = JSON.parse(stored)
-      setVendor(v)
+    if (user && user.role === "vendor") {
+      setVendor(user)
       setForm({
-        business: v.business || "",
-        phone: v.phone || "",
-        city: v.city || "",
-        description: v.description || "",
+        business: user.business || "",
+        phone: user.phone || "",
+        city: user.city || "",
+        description: user.description || "",
       })
     }
     setLoading(false)
-  }, [])
+  }, [user])
 
-  // ✅ VENDOR LOGOUT
+  // 🔥 LOGOUT = GLOBAL LOGOUT
   const logoutVendor = () => {
-    localStorage.removeItem("evenzaa_vendor")
+    logout()
     router.push("/vendor/login")
   }
 
@@ -58,17 +58,14 @@ export default function VendorDash() {
       description: form.description,
     }
 
-    localStorage.setItem("evenzaa_vendor", JSON.stringify(updatedVendor))
+    // 🔥 SAVE INTO CENTRAL AUTH STORAGE
+    localStorage.setItem("eventzaa_vendor", JSON.stringify(updatedVendor))
     setVendor(updatedVendor)
     setEditOpen(false)
   }
 
   if (loading) {
-    return (
-      <div className="pt-32 text-center text-gray-500">
-        Loading dashboard...
-      </div>
-    )
+    return <div className="pt-32 text-center text-gray-500">Loading dashboard...</div>
   }
 
   if (!vendor) {
@@ -89,7 +86,6 @@ export default function VendorDash() {
             Welcome, {vendor.business}
           </h1>
 
-          {/* 🔴 LOGOUT BUTTON */}
           <button
             onClick={logoutVendor}
             className="flex items-center gap-2 px-5 py-2 rounded-full border border-red-400 text-red-500 font-semibold hover:bg-red-50 transition"
@@ -105,9 +101,7 @@ export default function VendorDash() {
             <Wallet className="text-pink-600" size={34} />
             <div>
               <p className="text-gray-500">Total Sales</p>
-              <h2 className="text-2xl font-bold">
-                ₹{vendor.sales || 0}
-              </h2>
+              <h2 className="text-2xl font-bold">₹{vendor.sales || 0}</h2>
             </div>
           </div>
 
@@ -115,9 +109,7 @@ export default function VendorDash() {
             <Crown className="text-yellow-500" size={34} />
             <div>
               <p className="text-gray-500">Membership</p>
-              <h2 className="text-2xl font-bold">
-                {vendor.plan || "Free"}
-              </h2>
+              <h2 className="text-2xl font-bold">{vendor.plan || "Free"}</h2>
             </div>
           </div>
 
@@ -133,52 +125,32 @@ export default function VendorDash() {
         {/* ACTIONS */}
         <div className="grid md:grid-cols-2 gap-8">
           <div className="bg-white p-10 rounded-3xl shadow-2xl">
-            <h3 className="text-2xl font-bold mb-4">
-              Business Profile
-            </h3>
-            <p className="text-gray-500 mb-4">
-              Manage your business details visible to customers
-            </p>
-            <button
-              onClick={() => setEditOpen(true)}
-              className="btn-primary w-full"
-            >
+            <h3 className="text-2xl font-bold mb-4">Business Profile</h3>
+            <p className="text-gray-500 mb-4">Manage your business details visible to customers</p>
+            <button onClick={() => setEditOpen(true)} className="btn-primary w-full">
               Edit Business Profile
             </button>
           </div>
 
           <div className="bg-white p-10 rounded-3xl shadow-2xl">
-            <h3 className="text-2xl font-bold mb-4">
-              Bookings & Leads
-            </h3>
-            <p className="text-gray-500 mb-4">
-              View customer enquiries and confirmed bookings
-            </p>
-            <a
-              href="/vendor/dashboard/bookings"
-              className="btn-primary w-full block text-center"
-            >
+            <h3 className="text-2xl font-bold mb-4">Bookings & Leads</h3>
+            <p className="text-gray-500 mb-4">View customer enquiries and confirmed bookings</p>
+            <a href="/vendor/dashboard/bookings" className="btn-primary w-full block text-center">
               View Bookings
             </a>
           </div>
         </div>
       </div>
 
-      {/* ===== EDIT PROFILE MODAL ===== */}
+      {/* EDIT MODAL */}
       {editOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
           <div className="bg-white w-full max-w-lg rounded-2xl p-6 relative shadow-2xl">
-
-            <button
-              onClick={() => setEditOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setEditOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
               <X />
             </button>
 
-            <h2 className="text-2xl font-extrabold mb-6">
-              Edit Business Profile
-            </h2>
+            <h2 className="text-2xl font-extrabold mb-6">Edit Business Profile</h2>
 
             <div className="space-y-4">
               <input name="business" value={form.business} onChange={handleChange} className="input" placeholder="Business Name" />
@@ -187,10 +159,7 @@ export default function VendorDash() {
               <textarea name="description" value={form.description} onChange={handleChange} rows={3} className="input" placeholder="Business Description" />
             </div>
 
-            <button
-              onClick={saveProfile}
-              className="mt-6 w-full btn-primary"
-            >
+            <button onClick={saveProfile} className="mt-6 w-full btn-primary">
               Save Changes
             </button>
           </div>

@@ -3,15 +3,20 @@ import { findVendor } from "../../../utils/vendorDB"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Briefcase } from "lucide-react"
+import { useAuth } from "../../../context/AuthContext"
 
 export default function VendorLogin() {
   const [f, setF] = useState({})
   const router = useRouter()
+  const { loginVendor } = useAuth()
 
   const handleLogin = () => {
     const v = findVendor(f.username, f.password)
     if (!v) return alert("Invalid Vendor Credentials")
-    localStorage.setItem("evenzaa_vendor", JSON.stringify(v))
+
+    // CENTRAL AUTH SESSION (Navbar auto updates)
+    loginVendor(v)
+
     router.push("/vendor/dashboard")
   }
 

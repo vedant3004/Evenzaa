@@ -1,15 +1,35 @@
 "use client"
+
 import { getVendors } from "../../../utils/vendorDB"
 import { getUsers } from "../../../utils/userDB"
-import { Users, Wallet, Crown, BarChart3, Store } from "lucide-react"
-import { useState } from "react"
+import { Users, Wallet, BarChart3, Store } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function AdminDash() {
+  const router = useRouter()
+
   const vendors = getVendors()
   const users = getUsers()
-  const [view, setView] = useState("vendors") // vendors | users
+  const [view, setView] = useState("vendors")
+  const [admin, setAdmin] = useState(false)
 
   const totalSales = vendors.reduce((sum, v) => sum + (v.sales || 0), 0)
+
+  // 🔐 ADMIN GUARD
+  useEffect(() => {
+    const a = localStorage.getItem("evenzaa_admin")
+    if (!a) router.push("/admin/login")
+    else setAdmin(true)
+  }, [router])
+
+  if (!admin) {
+    return (
+      <div className="pt-32 text-center text-gray-500">
+        Checking admin session...
+      </div>
+    )
+  }
 
   return (
     <div className="pt-32 min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 px-4">
@@ -17,11 +37,9 @@ export default function AdminDash() {
 
         <h1 className="text-4xl font-extrabold mb-10">Admin Dashboard</h1>
 
-        {/* TOP STATS */}
+        {/* STATS */}
         <div className="grid md:grid-cols-4 gap-6 mb-12">
-
-          <div onClick={() => setView("vendors")}
-               className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-4 cursor-pointer hover:scale-105 transition">
+          <div onClick={() => setView("vendors")} className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-4 cursor-pointer hover:scale-105 transition">
             <Store className="text-pink-600" size={32} />
             <div>
               <p className="text-gray-500">Total Vendors</p>
@@ -29,8 +47,7 @@ export default function AdminDash() {
             </div>
           </div>
 
-          <div onClick={() => setView("users")}
-               className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-4 cursor-pointer hover:scale-105 transition">
+          <div onClick={() => setView("users")} className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-4 cursor-pointer hover:scale-105 transition">
             <Users className="text-purple-600" size={32} />
             <div>
               <p className="text-gray-500">Total Users</p>
@@ -55,7 +72,7 @@ export default function AdminDash() {
           </div>
         </div>
 
-        {/* CONDITIONAL LIST */}
+        {/* LIST */}
         <div className="bg-white p-10 rounded-3xl shadow-2xl">
 
           {view === "vendors" && (

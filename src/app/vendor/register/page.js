@@ -2,8 +2,10 @@
 import { saveVendor } from "../../../utils/vendorDB"
 import { useState } from "react"
 import { Crown, Star, Shield } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function VendorRegister() {
+  const router = useRouter()
   const [plan, setPlan] = useState(null)
   const [form, setForm] = useState({})
 
@@ -84,14 +86,24 @@ export default function VendorRegister() {
             onChange={e => setForm({ ...form, password: e.target.value })} />
         </div>
 
-        <button className="btn-primary w-full mt-6" onClick={() => {
-          if (!form.business || !form.username || !form.password)
-            return alert("Fill all details")
+        <button
+          className="btn-primary w-full mt-6"
+          onClick={() => {
+            if (!form.business || !form.username || !form.password)
+              return alert("Fill all details")
 
-          saveVendor({ ...form, plan, sales: 0 })
-          alert("Registration Successful")
-          location.href = "/vendor/login"
-        }}>
+            const vendorData = {
+              ...form,
+              plan,
+              sales: 0,
+              role: "vendor",
+            }
+
+            saveVendor(vendorData)
+            alert("Registration Successful")
+            router.push("/vendor/login")
+          }}
+        >
           Complete Registration
         </button>
 

@@ -3,16 +3,22 @@ import { ADMIN } from "../../../config/admin"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { ShieldCheck } from "lucide-react"
+import { useAuth } from "../../../context/AuthContext"
 
 export default function AdminLogin() {
   const [f, setF] = useState({})
   const router = useRouter()
+  const { loginAdmin } = useAuth()     // 🔥 CENTRAL AUTH
 
   const handleLogin = () => {
     if (f.username !== ADMIN.username || f.password !== ADMIN.password)
       return alert("Invalid Admin Credentials")
 
-    localStorage.setItem("evenzaa_admin", "true")
+    // 🔥 Central session (navbar auto updates)
+    loginAdmin({
+      username: f.username
+    })
+
     router.push("/admin/dashboard")
   }
 

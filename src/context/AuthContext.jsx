@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { findUser } from "../utils/userDB"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 
 const AuthContext = createContext()
 
@@ -12,29 +12,24 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   const router = useRouter()
+  const pathname = usePathname()
 
-  // =====================================
-  // LOAD USER / VENDOR ON PAGE REFRESH
-  // =====================================
+  // LOAD SESSION
   useEffect(() => {
-    const savedUser = localStorage.getItem("eventzaa_user")
-    const savedVendor = localStorage.getItem("eventzaa_vendor")
+    const u = localStorage.getItem("eventzaa_user")
+    const v = localStorage.getItem("evenzaa_vendor")
+    const a = localStorage.getItem("evenzaa_admin")
 
-    if (savedVendor) {
-      setUser(JSON.parse(savedVendor))
-    } else if (savedUser) {
-      setUser(JSON.parse(savedUser))
-    }
+    if (a) setUser({ role: "admin", username: "Admin" })
+    else if (v) setUser({ ...JSON.parse(v), role: "vendor" })
+    else if (u) setUser({ ...JSON.parse(u), role: "user" })
 
     setLoading(false)
   }, [])
 
-  // =====================================
-  // 🔥 AUTO REDIRECT AFTER LOGIN (MAIN FIX)
-  // =====================================
+  // AUTO REDIRECT
   useEffect(() => {
     if (!user) return
-
     const redirect = localStorage.getItem("redirectAfterLogin")
     if (redirect) {
       localStorage.removeItem("redirectAfterLogin")
@@ -42,95 +37,56 @@ export function AuthProvider({ children }) {
     }
   }, [user, router])
 
-  // =====================================
-  // 🔐 REQUIRE LOGIN (BOOK NOW GUARD)
-  // =====================================
-  const requireLogin = (redirectTo) => {
-    if (!user) {
-      localStorage.setItem("redirectAfterLogin", redirectTo)
-      setOpen(true)
-      return false
-    }
-    return true
-  }
+  const isVendorPage = pathname.startsWith("/vendor")
+  const isAdminPage = pathname.startsWith("/admin")
 
-  // =====================================
-  // CUSTOMER LOGIN
-  // =====================================
+  // USER LOGIN
   const login = (data) => {
     const found = findUser(data.email, data.password)
+    if (!found) return alert("Invalid Email or Password")
 
-    if (!found) {
-      alert("Invalid Email or Password")
-      return
-    }
-
-    const userData = {
-      ...found,
-      role: "user",
-    }
-
-    localStorage.setItem("eventzaa_user", JSON.stringify(userData))
-    localStorage.removeItem("eventzaa_vendor")
-
-    setUser(userData)
+    const u = { ...found, role: "user" }
+    localStorage.setItem("eventzaa_user", JSON.stringify(u))
+    localStorage.removeItem("evenzaa_vendor")
+    localStorage.removeItem("evenzaa_admin")
+    setUser(u)
     setOpen(false)
   }
 
-  // =====================================
   // VENDOR LOGIN
-  // =====================================
-  const loginVendor = (data) => {
-    const vendors = JSON.parse(localStorage.getItem("vendors") || "[]")
-
-    const found = vendors.find(
-      (v) => v.email === data.email && v.password === data.password
-    )
-
-    if (!found) {
-      alert("Invalid Vendor Credentials")
-      return
-    }
-
-    const vendorData = {
-      ...found,
-      role: "vendor",
-    }
-
-    localStorage.setItem("eventzaa_vendor", JSON.stringify(vendorData))
+  const loginVendor = (vendor) => {
+    const v = { ...vendor, role: "vendor" }
+    localStorage.setItem("evenzaa_vendor", JSON.stringify(v))
     localStorage.removeItem("eventzaa_user")
-
-    setUser(vendorData)
+    localStorage.removeItem("evenzaa_admin")
+    setUser(v)
     setOpen(false)
   }
 
-  // =====================================
-  // LOGOUT (USER / VENDOR)
-  // =====================================
+  // ADMIN LOGIN
+  const loginAdmin = () => {
+    localStorage.setItem("evenzaa_admin", "true")
+    localStorage.removeItem("eventzaa_user")
+    localStorage.removeItem("evenzaa_vendor")
+    setUser({ role: "admin", username: "Admin" })
+    setOpen(false)
+  }
+
+  // SAFE LOGOUT (NO DATA LOSS)
   const logout = () => {
     localStorage.removeItem("eventzaa_user")
-    localStorage.removeItem("eventzaa_vendor")
+    localStorage.removeItem("evenzaa_vendor")
+    localStorage.removeItem("evenzaa_admin")
     setUser(null)
     router.push("/")
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        open,
-        setOpen,
-
-        // 🔥 IMPORTANT
-        requireLogin,
-
-        // auth
-        login,
-        loginVendor,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{
+      user, loading, open, setOpen,
+      isVendorPage, isAdminPage,
+      login, loginVendor, loginAdmin, logout
+    }}>
       {children}
     </AuthContext.Provider>
   )

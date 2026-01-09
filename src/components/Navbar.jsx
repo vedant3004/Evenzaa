@@ -1,22 +1,28 @@
 "use client"
 
 import Image from "next/image"
-import { Menu, X, ChevronDown, User } from "lucide-react"
-import { useState } from "react"
+import { Menu, X, ChevronDown } from "lucide-react"
+import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import Link from "next/link"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 
 export default function Navbar() {
-  const { user, logout, setOpen, loading } = useAuth()
+  const { user, logout, setOpen, loading, isVendorPage, isAdminPage } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [vendorOpen, setVendorOpen] = useState(false)
+  const [adminLogged, setAdminLogged] = useState(false)
+
+  // 🔥 Detect admin session
+  useEffect(() => {
+    setAdminLogged(!!localStorage.getItem("evenzaa_admin"))
+  }, [user])
 
   return (
     <motion.nav
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      transition={{ duration: 0.6 }}
       className="fixed top-0 w-full z-50 backdrop-blur bg-white/80 shadow-md"
     >
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
@@ -25,146 +31,62 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-3">
           <div className="relative w-12 h-12">
             <div className="absolute inset-0 rounded-full bg-pink-400 blur-xl opacity-60 animate-pulse" />
-            <Image
-              src="/logo/VY.png"
-              fill
-              alt="EventZaa"
-              className="relative z-10 object-contain"
-            />
+            <Image src="/logo/VY.png" fill alt="EventZaa" className="object-contain" />
           </div>
-          <span className="text-xl font-extrabold text-pink-600 tracking-wide">
-            𝓔𝓿𝓮𝓷𝓩𝓪𝓪
-          </span>
+          <span className="text-xl font-extrabold text-pink-600 tracking-wide">𝓔𝓿𝓮𝓷𝓩𝓪𝓪</span>
         </Link>
 
-        {/* DESKTOP MENU */}
         <div className="hidden md:flex items-center gap-8 font-medium">
 
-          <Link href="/" className="hover:text-pink-600 transition">
-            Home
-          </Link>
+          <Link href="/">Home</Link>
 
-          {/* VENDORS DROPDOWN */}
-          <div
-            className="relative"
-            onMouseEnter={() => setVendorOpen(true)}
-            onMouseLeave={() => setVendorOpen(false)}
-          >
-            <button className="flex items-center gap-1 hover:text-pink-600 transition">
-              Vendors <ChevronDown size={16} />
-            </button>
-
-            <AnimatePresence>
-              {vendorOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ duration: 0.25 }}
-                  className="absolute top-full left-0 mt-2 bg-white shadow-xl rounded-xl w-48 overflow-hidden"
-                >
-                  <Link href="/vendor/login" className="block px-4 py-3 hover:bg-pink-50 hover:text-pink-600">
-                    Vendor Login
-                  </Link>
-                  <Link href="/vendor/register" className="block px-4 py-3 hover:bg-pink-50 hover:text-pink-600">
-                    Vendor Register
-                  </Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
+          {/* Vendors */}
+          <div onMouseEnter={() => setVendorOpen(true)} onMouseLeave={() => setVendorOpen(false)} className="relative">
+            <button className="flex items-center gap-1">Vendors <ChevronDown size={16} /></button>
+            {vendorOpen && (
+              <div className="absolute top-full mt-2 bg-white shadow-xl rounded-xl w-48 overflow-hidden">
+                <Link href="/vendor/login" className="block px-4 py-3 hover:bg-pink-50">Vendor Login</Link>
+                <Link href="/vendor/register" className="block px-4 py-3 hover:bg-pink-50">Vendor Register</Link>
+              </div>
+            )}
           </div>
 
-          <Link href="/bookings" className="hover:text-pink-600 transition">
-            Bookings
-          </Link>
+          <Link href="/bookings">Bookings</Link>
 
-          {loading && <span className="text-gray-400">...</span>}
+          {loading && <span>...</span>}
 
-          {!loading && !user && (
-            <motion.button
-              whileHover={{ scale: 1.07 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setOpen(true)}
-              className="px-5 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold"
-            >
-              Login / Signup
-            </motion.button>
+          {/* ADMIN MODE */}
+          {!loading && !user && isAdminPage && !adminLogged && (
+            <span className="font-semibold text-pink-600">Admin</span>
           )}
 
-          {!loading && user && (
+          {/* VENDOR MODE */}
+          {!loading && !user && isVendorPage && (
+            <span className="font-semibold text-pink-600">Vendor</span>
+          )}
+
+          {/* NORMAL MODE */}
+          {!loading && !user && !isVendorPage && !isAdminPage && !adminLogged && (
+            <button onClick={() => setOpen(true)} className="btn-primary">Login / Signup</button>
+          )}
+
+          {/* LOGGED USER / VENDOR / ADMIN */}
+          {!loading && (user || adminLogged) && (
             <div className="relative group">
               <span className="cursor-pointer font-semibold text-pink-600">
-                {user?.name || "User"}
+                {user?.username || user?.name || "Admin"}
               </span>
-              <div className="absolute hidden group-hover:block bg-white shadow-lg rounded-lg right-0 mt-2 p-3 min-w-[120px]">
-                <button onClick={logout} className="w-full text-left hover:text-red-500">
-                  Logout
-                </button>
+              <div className="absolute hidden group-hover:block bg-white shadow-lg rounded-lg right-0 mt-2 p-3">
+                <button onClick={logout} className="hover:text-red-500">Logout</button>
               </div>
             </div>
           )}
         </div>
 
-        {/* MOBILE ICON */}
         <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X /> : <Menu />}
         </button>
       </div>
-
-      {/* MOBILE MENU */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-white shadow-lg px-6 py-6 space-y-4 overflow-hidden"
-          >
-            {user && (
-              <div className="flex items-center gap-3 pb-3 border-b">
-                <div className="bg-pink-100 p-2 rounded-full">
-                  <User size={18} className="text-pink-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-pink-600">{user.name}</p>
-                  <button onClick={logout} className="text-xs text-red-500">
-                    Logout
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <Link href="/" className="block hover:text-pink-600">Home</Link>
-
-            <div className="border-t pt-3">
-              <p className="font-semibold text-gray-500 mb-2">Vendors</p>
-              <Link href="/vendor/login" className="block py-2 hover:text-pink-600">
-                Vendor Login
-              </Link>
-              <Link href="/vendor/register" className="block py-2 hover:text-pink-600">
-                Vendor Register
-              </Link>
-            </div>
-
-            <Link href="/bookings" className="block hover:text-pink-600">
-              Bookings
-            </Link>
-
-            {!user && (
-              <button
-                onClick={() => {
-                  setOpen(true)
-                  setMobileOpen(false)
-                }}
-                className="w-full mt-2 px-5 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold"
-              >
-                Login / Signup
-              </button>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.nav>
   )
 }
