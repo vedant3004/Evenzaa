@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import vendors from "../../../data/vendors"
 import { Star, MapPin, Phone } from "lucide-react"
 import { useAuth } from "../../../context/AuthContext"
+import { motion } from "framer-motion"
 
 export default function VendorDetailPage() {
   const params = useParams()
@@ -24,34 +25,68 @@ export default function VendorDetailPage() {
 
   const handleBook = () => {
     if (!user) {
-      setOpen(true)              // 🔒 force login
+      setOpen(true)
       return
     }
     router.push(`/bookings/${vendor.slug}`)
   }
 
   return (
-    <div className="pt-32 pb-20 max-w-6xl mx-auto px-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="pt-32 pb-20 max-w-6xl mx-auto px-4"
+    >
 
+      {/* ================= TOP SECTION ================= */}
       <div className="grid md:grid-cols-2 gap-10 items-center mb-14">
 
-        {/* IMAGE */}
-        <div className="relative w-full h-[320px] rounded-2xl overflow-hidden shadow-lg">
+        {/* IMAGE (PARALLAX ZOOM) */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          whileHover={{ scale: 1.04 }}
+          className="relative w-full h-[320px] rounded-2xl overflow-hidden shadow-2xl"
+        >
           <Image
             src={vendor.image}
             fill
             alt={vendor.name}
             className="object-cover"
           />
-        </div>
+        </motion.div>
 
         {/* DETAILS */}
-        <div>
-          <h1 className="text-4xl font-extrabold mb-2">{vendor.name}</h1>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: {
+              transition: { staggerChildren: 0.15 }
+            }
+          }}
+        >
+          <motion.h1
+            variants={{ hidden: { y: 30, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
+            className="text-4xl font-extrabold mb-2"
+          >
+            {vendor.name}
+          </motion.h1>
 
-          <p className="text-pink-600 font-semibold mb-3">{vendor.service}</p>
+          <motion.p
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+            className="text-pink-600 font-semibold mb-3"
+          >
+            {vendor.service}
+          </motion.p>
 
-          <div className="flex items-center gap-4 text-gray-600 mb-4">
+          <motion.div
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+            className="flex items-center gap-4 text-gray-600 mb-4"
+          >
             <span className="flex items-center gap-1">
               <Star size={18} className="text-yellow-500" />
               {vendor.rating}
@@ -60,45 +95,85 @@ export default function VendorDetailPage() {
               <MapPin size={18} />
               {vendor.location}
             </span>
-          </div>
+          </motion.div>
 
-          <p className="text-gray-700 mb-6">{vendor.description}</p>
+          <motion.p
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+            className="text-gray-700 mb-6"
+          >
+            {vendor.description}
+          </motion.p>
 
-          <p className="text-2xl font-bold text-pink-600 mb-6">
+          <motion.p
+            variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
+            className="text-2xl font-bold text-pink-600 mb-6"
+          >
             Starting from ₹{vendor.price}
-          </p>
+          </motion.p>
 
           {/* ACTION BUTTONS */}
-          <div className="flex gap-4 flex-wrap">
-            {/* 🔐 LOGIN-GATED BOOK NOW */}
-            <button onClick={handleBook} className="btn-primary">
+          <motion.div
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+            className="flex gap-4 flex-wrap"
+          >
+            {/* BOOK NOW */}
+            <motion.button
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleBook}
+              className="btn-primary"
+            >
               Book Now
-            </button>
+            </motion.button>
 
-            <a
+            {/* WHATSAPP */}
+            <motion.a
+              whileHover={{ scale: 1.05 }}
               href={`https://wa.me/${vendor.whatsapp}`}
               target="_blank"
               className="flex items-center gap-2 px-6 py-2 rounded-full border border-green-500 text-green-600 hover:bg-green-50 transition"
             >
               <Phone size={18} />
               WhatsApp
-            </a>
-          </div>
-        </div>
+            </motion.a>
+          </motion.div>
+        </motion.div>
       </div>
 
-      {/* SERVICES */}
-      <div className="bg-white rounded-2xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold mb-6">Services Offered</h2>
+      {/* ================= SERVICES ================= */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.12 } }
+        }}
+        className="bg-white rounded-2xl shadow-lg p-8"
+      >
+        <motion.h2
+          variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+          className="text-2xl font-bold mb-6"
+        >
+          Services Offered
+        </motion.h2>
 
         <ul className="grid sm:grid-cols-2 gap-4">
           {vendor.services.map((s) => (
-            <li key={s} className="px-4 py-3 rounded-lg bg-pink-50 font-medium">
+            <motion.li
+              key={s}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
+              className="px-4 py-3 rounded-lg bg-pink-50 font-medium"
+            >
               ✔ {s}
-            </li>
+            </motion.li>
           ))}
         </ul>
-      </div>
-    </div>
+      </motion.div>
+
+    </motion.div>
   )
 }

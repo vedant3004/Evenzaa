@@ -6,6 +6,7 @@ import citiesByState from "../data/cities"
 import vendors from "../data/vendors"
 import { ChevronDown } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
 
 export default function Hero() {
   const router = useRouter()
@@ -14,7 +15,7 @@ export default function Hero() {
   const [location, setLocation] = useState("")
   const [search, setSearch] = useState("")
   const [open, setOpen] = useState(false)
-  const [focus,setFocus] = useState(false)   // ✅ added
+  const [focus, setFocus] = useState(false)
   const wrapperRef = useRef(null)
 
   /* ===============================
@@ -72,7 +73,9 @@ export default function Hero() {
   ================================ */
   useEffect(() => {
     const handler = (e) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false)
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false)
+      }
     }
     document.addEventListener("mousedown", handler)
     return () => document.removeEventListener("mousedown", handler)
@@ -81,40 +84,77 @@ export default function Hero() {
   return (
     <section className="relative pt-36 pb-28 overflow-hidden bg-[var(--bg)]">
 
-      <div className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-pink-300/40 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 -right-32 w-[400px] h-[400px] bg-purple-300/40 rounded-full blur-3xl" />
+      {/* 🌈 FLOATING BLOBS */}
+      <motion.div
+        animate={{ y: [0, -40, 0], x: [0, 30, 0] }}
+        transition={{ duration: 18, repeat: Infinity }}
+        className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-pink-300/40 rounded-full blur-3xl"
+      />
+      <motion.div
+        animate={{ y: [0, 40, 0], x: [0, -30, 0] }}
+        transition={{ duration: 22, repeat: Infinity }}
+        className="absolute bottom-0 -right-32 w-[400px] h-[400px] bg-purple-300/40 rounded-full blur-3xl"
+      />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">
 
-        <div className="flex justify-center mb-12">
-          <div className="relative w-[220px] h-[220px]">
+        {/* 🔥 LOGO FLOAT */}
+        <motion.div
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="flex justify-center mb-12"
+        >
+          <motion.div
+            animate={{ y: [0, -15, 0] }}
+            transition={{ duration: 6, repeat: Infinity }}
+            className="relative w-[220px] h-[220px]"
+          >
             <div className="absolute inset-0 rounded-full bg-pink-400 blur-3xl opacity-60 animate-pulse" />
             <Image src="/logo/VY.png" fill alt="EventZaa Logo" className="object-contain" />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <h1 className="text-4xl md:text-6xl xl:text-7xl font-extrabold">
+        {/* 📝 HEADING */}
+        <motion.h1
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-4xl md:text-6xl xl:text-7xl font-extrabold"
+        >
           Plan Your
           <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
             Perfect Event
           </span>
           With Confidence
-        </h1>
+        </motion.h1>
 
-        <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600">
+        {/* SUBTITLE */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="mt-6 max-w-2xl mx-auto text-lg text-gray-600"
+        >
           Discover trusted vendors, compare services, and book unforgettable experiences.
-        </p>
+        </motion.p>
 
-        {/* 👇 POP ANIMATION ADDED */}
-        <div className={`max-w-3xl mx-auto bg-white/90 backdrop-blur-xl p-6 rounded-2xl shadow-2xl mt-14 transition-all ${focus ? "scale-105 ring-4 ring-pink-300" : ""}`}>
-
+        {/* 🔥 SEARCH CARD */}
+        <motion.div
+          initial={{ opacity: 0, y: 60, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+          className={`max-w-3xl mx-auto bg-white/90 backdrop-blur-xl p-6 rounded-2xl shadow-2xl mt-14 transition-all ${
+            focus ? "scale-105 ring-4 ring-pink-300" : ""
+          }`}
+        >
           <div className="grid md:grid-cols-3 gap-4">
 
             {/* SEARCH */}
             <div className="relative">
               <input
-                onFocus={()=>setFocus(true)}    // ✅ added
-                onBlur={()=>setFocus(false)}   // ✅ added
+                onFocus={() => setFocus(true)}
+                onBlur={() => setFocus(false)}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search vendors or events"
@@ -122,35 +162,49 @@ export default function Hero() {
               />
 
               {search && (
-                <div className="absolute z-20 bg-white shadow rounded-xl w-full mt-2 max-h-60 overflow-y-auto">
-
-                  {suggestions.length > 0 ? suggestions.map((v) => (
-                    <div
-                      key={v.id}
-                      onClick={() => router.push(`/vendors/${v.slug}`)}
-                      className="px-4 py-2 cursor-pointer hover:bg-pink-50"
-                    >
-                      {v.name} — <span className="text-sm text-gray-500">{v.category}</span>
-                    </div>
-                  )) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute z-20 bg-white shadow rounded-xl w-full mt-2 max-h-60 overflow-y-auto"
+                >
+                  {suggestions.length > 0 ? (
+                    suggestions.map((v) => (
+                      <div
+                        key={v.id}
+                        onClick={() => router.push(`/vendors/${v.slug}`)}
+                        className="px-4 py-2 cursor-pointer hover:bg-pink-50"
+                      >
+                        {v.name} —{" "}
+                        <span className="text-sm text-gray-500">
+                          {v.category}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
                     <div className="px-4 py-2 text-sm text-gray-400">
                       No results found
                     </div>
                   )}
-
-                </div>
+                </motion.div>
               )}
             </div>
 
             {/* LOCATION */}
             <div ref={wrapperRef} className="relative">
-              <div onClick={() => setOpen(!open)} className="input cursor-pointer flex justify-between">
+              <div
+                onClick={() => setOpen(!open)}
+                className="input cursor-pointer flex justify-between"
+              >
                 <span>{location || "Location"}</span>
                 <ChevronDown size={18} />
               </div>
 
               {open && (
-                <div className="absolute z-20 bg-white shadow rounded-lg mt-2 w-full max-h-52 overflow-y-auto">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute z-20 bg-white shadow rounded-lg mt-2 w-full max-h-52 overflow-y-auto"
+                >
                   <input
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
@@ -170,17 +224,19 @@ export default function Hero() {
                       {c}
                     </div>
                   ))}
-                </div>
+                </motion.div>
               )}
             </div>
 
             {/* SEARCH BTN */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleSearch}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:scale-105 transition"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold"
             >
               Search
-            </button>
+            </motion.button>
           </div>
 
           <div className="mt-6 flex justify-center gap-6 text-sm text-gray-500 flex-wrap">
@@ -188,7 +244,7 @@ export default function Hero() {
             <span>✔ Best Pricing</span>
             <span>✔ 24/7 Support</span>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

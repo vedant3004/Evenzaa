@@ -5,6 +5,7 @@ import { Menu, X, ChevronDown, User } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
 import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function Navbar() {
   const { user, logout, setOpen, loading } = useAuth()
@@ -12,13 +13,18 @@ export default function Navbar() {
   const [vendorOpen, setVendorOpen] = useState(false)
 
   return (
-    <nav className="fixed top-0 w-full z-50 backdrop-blur bg-white/80 shadow-md">
+    <motion.nav
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="fixed top-0 w-full z-50 backdrop-blur bg-white/80 shadow-md"
+    >
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
 
-        {/* ===== LOGO ===== */}
+        {/* LOGO */}
         <Link href="/" className="flex items-center gap-3">
           <div className="relative w-12 h-12">
-            <div className="absolute inset-0 rounded-full bg-pink-400 blur-xl opacity-60" />
+            <div className="absolute inset-0 rounded-full bg-pink-400 blur-xl opacity-60 animate-pulse" />
             <Image
               src="/logo/VY.png"
               fill
@@ -31,46 +37,58 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* ===== DESKTOP MENU ===== */}
+        {/* DESKTOP MENU */}
         <div className="hidden md:flex items-center gap-8 font-medium">
 
-          <Link href="/" className="hover:text-pink-600">Home</Link>
+          <Link href="/" className="hover:text-pink-600 transition">
+            Home
+          </Link>
 
-          {/* ===== VENDORS DROPDOWN ===== */}
+          {/* VENDORS DROPDOWN */}
           <div
             className="relative"
             onMouseEnter={() => setVendorOpen(true)}
             onMouseLeave={() => setVendorOpen(false)}
           >
-            <button className="flex items-center gap-1 hover:text-pink-600">
+            <button className="flex items-center gap-1 hover:text-pink-600 transition">
               Vendors <ChevronDown size={16} />
             </button>
 
-            {vendorOpen && (
-              <div className="absolute top-full left-0 mt-2 bg-white shadow-xl rounded-xl w-48 overflow-hidden">
-                <Link href="/vendor/login" className="block px-4 py-3 hover:bg-pink-50 hover:text-pink-600">
-                  Vendor Login
-                </Link>
-                <Link href="/vendor/register" className="block px-4 py-3 hover:bg-pink-50 hover:text-pink-600">
-                  Vendor Register
-                </Link>
-              </div>
-            )}
+            <AnimatePresence>
+              {vendorOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.25 }}
+                  className="absolute top-full left-0 mt-2 bg-white shadow-xl rounded-xl w-48 overflow-hidden"
+                >
+                  <Link href="/vendor/login" className="block px-4 py-3 hover:bg-pink-50 hover:text-pink-600">
+                    Vendor Login
+                  </Link>
+                  <Link href="/vendor/register" className="block px-4 py-3 hover:bg-pink-50 hover:text-pink-600">
+                    Vendor Register
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          <Link href="/bookings" className="hover:text-pink-600">
+          <Link href="/bookings" className="hover:text-pink-600 transition">
             Bookings
           </Link>
 
-          {loading && <span className="px-5 py-2 rounded-lg text-gray-400">...</span>}
+          {loading && <span className="text-gray-400">...</span>}
 
           {!loading && !user && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.07 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setOpen(true)}
-              className="px-5 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:scale-105 transition"
+              className="px-5 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold"
             >
               Login / Signup
-            </button>
+            </motion.button>
           )}
 
           {!loading && user && (
@@ -87,62 +105,66 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* ===== MOBILE ICON ===== */}
+        {/* MOBILE ICON */}
         <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X /> : <Menu />}
         </button>
       </div>
 
-      {/* ===== MOBILE MENU ===== */}
-      {mobileOpen && (
-        <div className="md:hidden bg-white shadow-lg px-6 py-6 space-y-4">
+      {/* MOBILE MENU */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-white shadow-lg px-6 py-6 space-y-4 overflow-hidden"
+          >
+            {user && (
+              <div className="flex items-center gap-3 pb-3 border-b">
+                <div className="bg-pink-100 p-2 rounded-full">
+                  <User size={18} className="text-pink-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-pink-600">{user.name}</p>
+                  <button onClick={logout} className="text-xs text-red-500">
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
 
-          {/* 🔥 MOBILE USER HEADER ADDED */}
-          {user && (
-            <div className="flex items-center gap-3 pb-3 border-b">
-              <div className="bg-pink-100 p-2 rounded-full">
-                <User size={18} className="text-pink-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-pink-600">{user.name}</p>
-                <button onClick={logout} className="text-xs text-red-500">
-                  Logout
-                </button>
-              </div>
+            <Link href="/" className="block hover:text-pink-600">Home</Link>
+
+            <div className="border-t pt-3">
+              <p className="font-semibold text-gray-500 mb-2">Vendors</p>
+              <Link href="/vendor/login" className="block py-2 hover:text-pink-600">
+                Vendor Login
+              </Link>
+              <Link href="/vendor/register" className="block py-2 hover:text-pink-600">
+                Vendor Register
+              </Link>
             </div>
-          )}
 
-          <Link href="/" className="block hover:text-pink-600">Home</Link>
-
-          <div className="border-t pt-3">
-            <p className="font-semibold text-gray-500 mb-2">Vendors</p>
-            <Link href="/vendor/login" className="block py-2 hover:text-pink-600" onClick={() => setMobileOpen(false)}>
-              Vendor Login
+            <Link href="/bookings" className="block hover:text-pink-600">
+              Bookings
             </Link>
-            <Link href="/vendor/register" className="block py-2 hover:text-pink-600" onClick={() => setMobileOpen(false)}>
-              Vendor Register
-            </Link>
-          </div>
 
-          <Link href="/bookings" className="block hover:text-pink-600">
-            Bookings
-          </Link>
-
-          {loading && <span className="text-gray-400">...</span>}
-
-          {!loading && !user && (
-            <button
-              onClick={() => {
-                setOpen(true)
-                setMobileOpen(false)
-              }}
-              className="w-full mt-2 px-5 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold"
-            >
-              Login / Signup
-            </button>
-          )}
-        </div>
-      )}
-    </nav>
+            {!user && (
+              <button
+                onClick={() => {
+                  setOpen(true)
+                  setMobileOpen(false)
+                }}
+                className="w-full mt-2 px-5 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold"
+              >
+                Login / Signup
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   )
 }

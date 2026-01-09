@@ -1,4 +1,7 @@
+"use client"
+
 import { ShieldCheck, Users, Building2, Headset } from "lucide-react"
+import { motion } from "framer-motion"
 
 const items = [
   {
@@ -25,49 +28,87 @@ const items = [
 
 export default function WhyChoose() {
   return (
-    <section className="bg-gray-50 py-24 text-center">
-      {/* Heading */}
-      <h2 className="text-4xl font-extrabold mb-4">
+    <section className="bg-gray-50 py-24 text-center overflow-hidden">
+
+      {/* HEADING */}
+      <motion.h2
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="text-4xl font-extrabold mb-4"
+      >
         Why Choose EventZaa?
-      </h2>
-      <p className="text-gray-600 mb-16 max-w-2xl mx-auto">
+      </motion.h2>
+
+      <motion.p
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.8 }}
+        viewport={{ once: true }}
+        className="text-gray-600 mb-16 max-w-2xl mx-auto"
+      >
         We simplify event planning by connecting you with trusted vendors and
         premium services.
-      </p>
+      </motion.p>
 
-      {/* Cards */}
+      {/* CARDS */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 max-w-7xl mx-auto px-4">
         {items.map((item, i) => {
           const Icon = item.icon
+
           return (
-            <div
+            <motion.div
               key={i}
-              className="group bg-white p-10 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+              initial={{ opacity: 0, y: 80, scale: 0.9 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{
+                delay: i * 0.2,
+                duration: 0.9,
+                ease: "easeOut",
+              }}
+              viewport={{ once: true }}
+              whileHover={{ scale: 1.05 }}
+              className="relative bg-white p-10 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden"
             >
+
+              {/* Glow layer */}
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-300/10 to-purple-300/10 opacity-0 group-hover:opacity-100 transition" />
+
               {/* Icon */}
-              <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 group-hover:scale-110 transition">
+              <div className="flex justify-center mb-6 relative z-10">
+                <motion.div
+                  whileHover={{ rotate: 5, scale: 1.1 }}
+                  className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 shadow-inner"
+                >
                   <Icon size={32} />
-                </div>
+                </motion.div>
               </div>
 
-              <h3 className="font-bold text-xl mb-3">
+              <h3 className="font-bold text-xl mb-3 relative z-10">
                 {item.title}
               </h3>
-              <p className="text-gray-500 text-sm leading-relaxed">
+              <p className="text-gray-500 text-sm leading-relaxed relative z-10">
                 {item.desc}
               </p>
-            </div>
+            </motion.div>
           )
         })}
       </div>
 
-      {/* Trust Bar */}
-      <div className="mt-16 flex justify-center gap-8 text-sm text-gray-600 flex-wrap">
+      {/* TRUST BAR */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.8 }}
+        viewport={{ once: true }}
+        className="mt-16 flex justify-center gap-8 text-sm text-gray-600 flex-wrap"
+      >
         <span>✔ Trusted by 10,000+ Customers</span>
         <span>✔ Secure & Transparent</span>
         <span>✔ Hassle-Free Booking</span>
-      </div>
+      </motion.div>
+
     </section>
   )
 }

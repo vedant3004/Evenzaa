@@ -3,37 +3,61 @@
 import Image from "next/image"
 import Link from "next/link"
 import vendors from "../data/vendors"
+import { motion } from "framer-motion"
 
 export default function FeaturedVendors() {
-
-  // ⭐ Only show top 4 highest rated vendors
   const topVendors = [...vendors]
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 4)
 
   return (
-    <section className="py-24 bg-white text-center">
-      <h2 className="text-4xl font-extrabold mb-4">
+    <motion.section
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+      viewport={{ once: true }}
+      className="py-24 bg-white text-center"
+    >
+      <motion.h2
+        initial={{ y: 30, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="text-4xl font-extrabold mb-4"
+      >
         Featured Vendors
-      </h2>
+      </motion.h2>
 
       <p className="text-gray-600 mb-14 max-w-2xl mx-auto">
         Handpicked professionals trusted for weddings, corporate events and celebrations.
       </p>
 
-      {/* TOP 4 VENDORS */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto px-4">
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.2 } }
+        }}
+        className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto px-4"
+      >
         {topVendors.map((v) => (
-          <div
+          <motion.div
             key={v.id}
-            className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+            variants={{
+              hidden: { opacity: 0, scale: 0.9 },
+              visible: { opacity: 1, scale: 1 }
+            }}
+            whileHover={{ y: -10 }}
+            transition={{ duration: 0.4 }}
+            className="group bg-white rounded-2xl shadow-lg overflow-hidden"
           >
-            <div className="relative h-48">
+            <div className="relative h-48 overflow-hidden">
               <Image
                 src={v.image}
                 fill
                 alt={v.name}
-                className="object-cover group-hover:scale-110 transition duration-300"
+                className="object-cover transition duration-500 group-hover:scale-110"
               />
               <span className="absolute top-3 left-3 bg-pink-600 text-white text-xs px-3 py-1 rounded-full">
                 {v.service}
@@ -51,19 +75,24 @@ export default function FeaturedVendors() {
                 View Details
               </Link>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* VIEW ALL */}
-      <div className="mt-14">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        viewport={{ once: true }}
+        className="mt-14"
+      >
         <Link
           href="/vendors"
           className="inline-block px-8 py-3 rounded-xl border border-pink-500 text-pink-600 font-semibold hover:bg-pink-50 transition"
         >
           View All Vendors
         </Link>
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   )
 }

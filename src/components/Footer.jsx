@@ -4,34 +4,43 @@ import { Facebook, Instagram, Twitter, Linkedin, Mail, Phone, MapPin } from "luc
 import { useEffect, useRef } from "react"
 
 export default function Footer() {
-
   const footerRef = useRef(null)
 
   useEffect(() => {
+    const el = footerRef.current
+    if (!el) return
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add("animate-footer")
+          el.classList.add("animate-footer")
+          observer.disconnect()
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.15 }
     )
 
-    if (footerRef.current) observer.observe(footerRef.current)
+    observer.observe(el)
+    return () => observer.disconnect()
   }, [])
 
   return (
     <footer
       ref={footerRef}
-      className="bg-gradient-to-r from-[#020617] to-[#0f172a] text-gray-300 pt-20 opacity-0 translate-y-10 transition-all duration-[1200ms] ease-out">
-
+      className="bg-gradient-to-r from-[#020617] to-[#0f172a] text-gray-300 pt-20 opacity-0 translate-y-10 transition-all duration-[1000ms] ease-out will-change-transform"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 grid gap-12 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 pb-16">
 
         {/* BRAND */}
         <div className="text-center sm:text-left flex flex-col items-center sm:items-start">
           <div className="relative w-20 h-20 sm:w-24 sm:h-24 mb-2 group">
             <div className="absolute inset-0 rounded-full bg-pink-500 blur-3xl opacity-40 group-hover:opacity-70 transition animate-pulse"></div>
-            <Image src="/logo/VY.png" fill className="relative z-10 object-contain hover:scale-110 transition" alt="EventZaa" />
+            <Image
+              src="/logo/VY.png"
+              fill
+              className="relative z-10 object-contain hover:scale-110 transition"
+              alt="EventZaa"
+            />
           </div>
 
           <h2 className="text-2xl font-extrabold text-pink-400 mb-1 hover:text-pink-300 transition drop-shadow-[0_0_12px_#ec4899]">
@@ -45,13 +54,17 @@ export default function Footer() {
 
           <div className="flex gap-4 justify-center sm:justify-start">
             {[Facebook, Instagram, Twitter, Linkedin].map((Icon, i) => (
-              <Icon key={i} size={20} className="hover:text-pink-400 hover:scale-125 transition cursor-pointer drop-shadow-[0_0_6px_#ec4899]" />
+              <Icon
+                key={i}
+                size={20}
+                className="hover:text-pink-400 hover:scale-125 transition cursor-pointer drop-shadow-[0_0_6px_#ec4899]"
+              />
             ))}
           </div>
         </div>
 
-        {/* COMPANY */}
-        {["Company","Services","Portals","Contact"].map((title, i) => (
+        {/* COLUMNS */}
+        {["Company", "Services", "Portals", "Contact"].map((title, i) => (
           <div key={i} className="text-center sm:text-left group">
             <h3 className="text-pink-400 font-semibold mb-1 tracking-wide drop-shadow-[0_0_8px_#ec4899]">
               {title}
@@ -60,32 +73,39 @@ export default function Footer() {
 
             {title === "Company" && (
               <ul className="space-y-3 text-sm">
-                {["About Us","Careers","Blog","Contact Us"].map((t,i)=><li key={i} className="hover:text-pink-400 transition cursor-pointer">{t}</li>)}
+                {["About Us", "Careers", "Blog", "Contact Us"].map((t, i) => (
+                  <li key={i} className="hover:text-pink-400 transition cursor-pointer">{t}</li>
+                ))}
               </ul>
             )}
 
             {title === "Services" && (
               <ul className="space-y-3 text-sm">
-                {["Event Planning","Vendor Network","Venue Booking","Catering","Decoration"].map((t,i)=><li key={i} className="hover:text-pink-400 transition cursor-pointer">{t}</li>)}
+                {["Event Planning", "Vendor Network", "Venue Booking", "Catering", "Decoration"].map((t, i) => (
+                  <li key={i} className="hover:text-pink-400 transition cursor-pointer">{t}</li>
+                ))}
               </ul>
             )}
 
             {title === "Portals" && (
               <ul className="space-y-3 text-sm">
-                <li><a href="/admin/login" className="hover:text-pink-400 transition">Admin Login</a></li>
+                <li>
+                  <a href="/admin/login" className="hover:text-pink-400 transition">Admin Login</a>
+                </li>
               </ul>
             )}
 
             {title === "Contact" && (
               <ul className="space-y-4 text-sm">
                 <li className="flex justify-center sm:justify-start gap-3 items-start hover:text-pink-400 transition">
-                  <MapPin size={18} className="text-pink-400 mt-1"/> Navi Mumbai, Maharashtra, India
+                  <MapPin size={18} className="text-pink-400 mt-1" />
+                  Navi Mumbai, Maharashtra, India
                 </li>
                 <li className="flex justify-center sm:justify-start gap-3 items-center hover:text-pink-400 transition">
-                  <Phone size={18} className="text-pink-400"/> +91 9594332865
+                  <Phone size={18} className="text-pink-400" /> +91 9594332865
                 </li>
                 <li className="flex justify-center sm:justify-start gap-3 items-center hover:text-pink-400 transition">
-                  <Mail size={18} className="text-pink-400"/> support@evenzaa.com
+                  <Mail size={18} className="text-pink-400" /> support@evenzaa.com
                 </li>
               </ul>
             )}
