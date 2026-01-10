@@ -13,7 +13,6 @@ export default function Navbar() {
   const [vendorOpen, setVendorOpen] = useState(false)
   const [adminLogged, setAdminLogged] = useState(false)
 
-  // 🔥 Detect admin session
   useEffect(() => {
     setAdminLogged(!!localStorage.getItem("evenzaa_admin"))
   }, [user])
@@ -27,13 +26,15 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
 
-        {/* LOGO */}
+        {/* LOGO — 🔥 SIZE INCREASED */}
         <Link href="/" className="flex items-center gap-3">
-          <div className="relative w-12 h-12">
+          <div className="relative w-16 h-16">   {/* was w-12 h-12 */}
             <div className="absolute inset-0 rounded-full bg-pink-400 blur-xl opacity-60 animate-pulse" />
             <Image src="/logo/VY.png" fill alt="EventZaa" className="object-contain" />
           </div>
-          <span className="text-xl font-extrabold text-pink-600 tracking-wide">𝓔𝓿𝓮𝓷𝓩𝓪𝓪</span>
+          <span className="text-2xl font-extrabold text-pink-600 tracking-wide">
+            𝓔𝓿𝓮𝓷𝓩𝓪𝓪
+          </span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8 font-medium">

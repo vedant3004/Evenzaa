@@ -3,7 +3,15 @@
 import Link from "next/link"
 import { motion } from "framer-motion"
 
-const cats = ["Weddings", "Corporate", "Birthday", "Concerts", "Conferences", "Sports"]
+// 🔥 category + image mapping
+const categories = [
+  { name: "Weddings", image: "/categories/wedding.jpg" },
+  { name: "Corporate", image: "/categories/corporate.jpg" },
+  { name: "Birthday", image: "/categories/birthday.jpg" },
+  { name: "Concerts", image: "/categories/concert.jpg" },
+  { name: "Conferences", image: "/categories/conference.jpg" },
+  { name: "Sports", image: "/categories/sports.jpg" },
+]
 
 // container animation
 const container = {
@@ -51,27 +59,37 @@ export default function Categories() {
         viewport={{ once: true }}
         className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4"
       >
-        {cats.map((c) => (
-          <motion.div key={c} variants={item}>
-            <Link href={`/categories/${c}`}>
+        {categories.map((c) => (
+          <motion.div key={c.name} variants={item}>
+            <Link href={`/categories/${c.name}`}>
 
               <div
-                className="relative bg-gradient-to-br from-pink-50 to-purple-50 p-10 rounded-2xl shadow-xl cursor-pointer
+                className="relative rounded-2xl shadow-xl cursor-pointer overflow-hidden
                            hover:shadow-[0_25px_80px_-20px_rgba(236,72,153,0.5)]
-                           transition-all duration-500 group overflow-hidden"
+                           transition-all duration-500 group"
               >
+                {/* 🔥 BACKGROUND IMAGE */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center scale-110 group-hover:scale-100 transition-transform duration-700"
+                  style={{ backgroundImage: `url(${c.image})` }}
+                />
+
+                {/* 🔥 DARK GRADIENT OVERLAY */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
                 {/* glowing orb */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-pink-400/30 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition" />
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-pink-400/40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition" />
 
                 {/* content */}
-                <h3 className="relative z-10 font-extrabold text-xl mb-2 text-gray-800 group-hover:text-pink-600 transition">
-                  {c}
-                </h3>
+                <div className="relative z-10 p-10 text-left">
+                  <h3 className="font-extrabold text-xl mb-2 text-white group-hover:text-pink-400 transition">
+                    {c.name}
+                  </h3>
 
-                <p className="relative z-10 text-gray-500 text-sm">
-                  1000+ events
-                </p>
+                  <p className="text-gray-200 text-sm">
+                    1000+ events
+                  </p>
+                </div>
 
                 {/* shine line */}
                 <div className="absolute bottom-0 left-0 h-[3px] w-0 bg-gradient-to-r from-pink-500 to-purple-500 group-hover:w-full transition-all duration-700" />

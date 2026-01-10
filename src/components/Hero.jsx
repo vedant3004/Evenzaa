@@ -82,7 +82,8 @@ export default function Hero() {
   }, [])
 
   return (
-    <section className="relative pt-36 pb-28 overflow-hidden bg-[var(--bg)]">
+    <section className="relative pt-24 pb-28 overflow-hidden bg-[var(--bg)]">
+      {/* 🔥 Reduced top padding from pt-36 → pt-24 so content moves up */}
 
       {/* 🌈 FLOATING BLOBS */}
       <motion.div
@@ -98,22 +99,7 @@ export default function Hero() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">
 
-        {/* 🔥 LOGO FLOAT */}
-        <motion.div
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="flex justify-center mb-12"
-        >
-          <motion.div
-            animate={{ y: [0, -15, 0] }}
-            transition={{ duration: 6, repeat: Infinity }}
-            className="relative w-[220px] h-[220px]"
-          >
-            <div className="absolute inset-0 rounded-full bg-pink-400 blur-3xl opacity-60 animate-pulse" />
-            <Image src="/logo/VY.png" fill alt="EventZaa Logo" className="object-contain" />
-          </motion.div>
-        </motion.div>
+        {/* ❌ REMOVED CENTER BIG LOGO COMPLETELY */}
 
         {/* 📝 HEADING */}
         <motion.h1
@@ -149,7 +135,6 @@ export default function Hero() {
           }`}
         >
           <div className="grid md:grid-cols-3 gap-4">
-
             {/* SEARCH */}
             <div className="relative">
               <input
