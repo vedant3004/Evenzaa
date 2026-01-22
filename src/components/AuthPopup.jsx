@@ -2,11 +2,10 @@
 
 import { useAuth } from "../context/AuthContext"
 import { useState, useEffect } from "react"
-import { saveUser } from "../utils/userDB"
 import { useRouter } from "next/navigation"
 
 export default function AuthPopup() {
-  const { open, setOpen, login, user } = useAuth()
+  const { open, setOpen, login, register, user } = useAuth()
   const router = useRouter()
 
   const [mode, setMode] = useState("login")
@@ -16,12 +15,11 @@ export default function AuthPopup() {
     name: "",
   })
 
-  // ✅ REDIRECT AFTER LOGIN (PROPER WAY)
+  // ================= REDIRECT AFTER LOGIN =================
   useEffect(() => {
     if (!user) return
 
     const redirect = localStorage.getItem("redirectAfterLogin")
-
     setOpen(false)
 
     if (redirect) {
@@ -32,31 +30,21 @@ export default function AuthPopup() {
 
   if (!open) return null
 
-  // ================= REGISTER =================
-  const register = () => {
-    if (!form.email || !form.password || !form.name) {
-      alert("Fill all fields")
-      return
+  // ================= SUBMIT =================
+  const submit = async () => {
+    if (mode === "login") {
+      if (!form.email || !form.password) {
+        alert("Enter email & password")
+        return
+      }
+      await login(form)
+    } else {
+      if (!form.name || !form.email || !form.password) {
+        alert("Fill all fields")
+        return
+      }
+      await register(form)
     }
-
-    const ok = saveUser(form)
-
-    if (!ok) {
-      alert("User already registered. Please login.")
-      return
-    }
-
-    login(form) // 🔥 redirect handled in useEffect
-  }
-
-  // ================= LOGIN =================
-  const doLogin = () => {
-    if (!form.email || !form.password) {
-      alert("Enter email & password")
-      return
-    }
-
-    login(form) // 🔥 redirect handled in useEffect
   }
 
   return (
@@ -68,7 +56,6 @@ export default function AuthPopup() {
         </h2>
 
         <div className="space-y-3">
-
           {mode === "register" && (
             <input
               placeholder="Full Name"
@@ -101,7 +88,7 @@ export default function AuthPopup() {
         </div>
 
         <button
-          onClick={mode === "login" ? doLogin : register}
+          onClick={submit}
           className="btn-primary w-full mt-4"
         >
           {mode === "login" ? "Login" : "Register"}

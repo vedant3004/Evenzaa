@@ -1,5 +1,6 @@
 "use client"
 import Image from "next/image"
+import Link from "next/link"
 import { Facebook, Instagram, Twitter, Linkedin, Mail, Phone, MapPin } from "lucide-react"
 import { useEffect, useRef } from "react"
 
@@ -77,7 +78,15 @@ export default function Footer() {
               <h3 className="footer-title">{sec.title}</h3>
               <ul className="space-y-3 text-gray-400 text-sm">
                 {sec.data.map((t, idx) => (
-                  <li key={idx} className="hover:text-pink-400 cursor-pointer transition">{t}</li>
+                  <li key={idx} className="hover:text-pink-400 cursor-pointer transition">
+                    {sec.title === "Portals" && t === "Admin Login" ? (
+                      <Link href="/admin/login" className="inline-block">
+                        Admin Login
+                      </Link>
+                    ) : (
+                      t
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -104,7 +113,6 @@ export default function Footer() {
           transform: translateY(0) !important;
         }
 
-        /* Reveal animation */
         .reveal {
           opacity: 0;
           transform: translateY(40px);
@@ -121,7 +129,6 @@ export default function Footer() {
           }
         }
 
-        /* ===== VORTEX HOVER LINE ===== */
         .footer-title {
           position: relative;
           display: inline-block;
@@ -133,7 +140,6 @@ export default function Footer() {
           cursor: pointer;
         }
 
-        /* hidden by default */
         .footer-title::after {
           content: "";
           position: absolute;
@@ -147,7 +153,6 @@ export default function Footer() {
           transition: width 0.45s ease;
         }
 
-        /* animate only on hover */
         .footer-group:hover .footer-title::after {
           width: 100%;
         }

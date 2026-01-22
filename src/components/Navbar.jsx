@@ -26,9 +26,9 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
 
-        {/* LOGO — 🔥 SIZE INCREASED */}
+        {/* LOGO */}
         <Link href="/" className="flex items-center gap-3">
-          <div className="relative w-16 h-16">   {/* was w-12 h-12 */}
+          <div className="relative w-16 h-16">
             <div className="absolute inset-0 rounded-full bg-pink-400 blur-xl opacity-60 animate-pulse" />
             <Image src="/logo/VY.png" fill alt="EventZaa" className="object-contain" />
           </div>
@@ -41,13 +41,24 @@ export default function Navbar() {
 
           <Link href="/">Home</Link>
 
-          {/* Vendors */}
-          <div onMouseEnter={() => setVendorOpen(true)} onMouseLeave={() => setVendorOpen(false)} className="relative">
-            <button className="flex items-center gap-1">Vendors <ChevronDown size={16} /></button>
+          {/* Vendors Dropdown */}
+          <div
+            onMouseEnter={() => setVendorOpen(true)}
+            onMouseLeave={() => setVendorOpen(false)}
+            className="relative"
+          >
+            <button className="flex items-center gap-1">
+              Vendors <ChevronDown size={16} />
+            </button>
+
             {vendorOpen && (
               <div className="absolute top-full mt-2 bg-white shadow-xl rounded-xl w-48 overflow-hidden">
-                <Link href="/vendor/login" className="block px-4 py-3 hover:bg-pink-50">Vendor Login</Link>
-                <Link href="/vendor/register" className="block px-4 py-3 hover:bg-pink-50">Vendor Register</Link>
+                <Link href="/vendor/login" className="block px-4 py-3 hover:bg-pink-50">
+                  Vendor Login
+                </Link>
+                <Link href="/vendor/register" className="block px-4 py-3 hover:bg-pink-50">
+                  Vendor Register
+                </Link>
               </div>
             )}
           </div>
@@ -56,34 +67,43 @@ export default function Navbar() {
 
           {loading && <span>...</span>}
 
-          {/* ADMIN MODE */}
+          {/* ADMIN MODE (NOT LOGGED) */}
           {!loading && !user && isAdminPage && !adminLogged && (
             <span className="font-semibold text-pink-600">Admin</span>
           )}
 
-          {/* VENDOR MODE */}
+          {/* VENDOR MODE (NOT LOGGED) */}
           {!loading && !user && isVendorPage && (
             <span className="font-semibold text-pink-600">Vendor</span>
           )}
 
-          {/* NORMAL MODE */}
+          {/* NORMAL USER (NOT LOGGED) */}
           {!loading && !user && !isVendorPage && !isAdminPage && !adminLogged && (
-            <button onClick={() => setOpen(true)} className="btn-primary">Login / Signup</button>
+            <button onClick={() => setOpen(true)} className="btn-primary">
+              Login / Signup
+            </button>
           )}
 
           {/* LOGGED USER / VENDOR / ADMIN */}
           {!loading && (user || adminLogged) && (
             <div className="relative group">
               <span className="cursor-pointer font-semibold text-pink-600">
-                {user?.username || user?.name || "Admin"}
+                {user?.displayName || user?.username || user?.name || "Admin"}
               </span>
-              <div className="absolute hidden group-hover:block bg-white shadow-lg rounded-lg right-0 mt-2 p-3">
-                <button onClick={logout} className="hover:text-red-500">Logout</button>
+
+              <div className="absolute hidden group-hover:block bg-white shadow-lg rounded-lg right-0 mt-2 p-3 min-w-[120px]">
+                <button
+                  onClick={logout}
+                  className="hover:text-red-500 w-full text-left"
+                >
+                  Logout
+                </button>
               </div>
             </div>
           )}
         </div>
 
+        {/* MOBILE MENU ICON */}
         <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X /> : <Menu />}
         </button>
