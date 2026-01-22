@@ -11,6 +11,7 @@ export default function Navbar() {
   const { user, logout, setOpen, loading, isVendorPage, isAdminPage } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [vendorOpen, setVendorOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [adminLogged, setAdminLogged] = useState(false)
 
   useEffect(() => {
@@ -42,21 +43,28 @@ export default function Navbar() {
           <Link href="/">Home</Link>
 
           {/* Vendors Dropdown */}
-          <div
-            onMouseEnter={() => setVendorOpen(true)}
-            onMouseLeave={() => setVendorOpen(false)}
-            className="relative"
-          >
-            <button className="flex items-center gap-1">
+          <div className="relative">
+            <button
+              onClick={() => setVendorOpen(prev => !prev)}
+              className="flex items-center gap-1"
+            >
               Vendors <ChevronDown size={16} />
             </button>
 
             {vendorOpen && (
               <div className="absolute top-full mt-2 bg-white shadow-xl rounded-xl w-48 overflow-hidden">
-                <Link href="/vendor/login" className="block px-4 py-3 hover:bg-pink-50">
+                <Link
+                  href="/vendor/login"
+                  onClick={() => setVendorOpen(false)}
+                  className="block px-4 py-3 hover:bg-pink-50"
+                >
                   Vendor Login
                 </Link>
-                <Link href="/vendor/register" className="block px-4 py-3 hover:bg-pink-50">
+                <Link
+                  href="/vendor/register"
+                  onClick={() => setVendorOpen(false)}
+                  className="block px-4 py-3 hover:bg-pink-50"
+                >
                   Vendor Register
                 </Link>
               </div>
@@ -67,43 +75,47 @@ export default function Navbar() {
 
           {loading && <span>...</span>}
 
-          {/* ADMIN MODE (NOT LOGGED) */}
           {!loading && !user && isAdminPage && !adminLogged && (
             <span className="font-semibold text-pink-600">Admin</span>
           )}
 
-          {/* VENDOR MODE (NOT LOGGED) */}
           {!loading && !user && isVendorPage && (
             <span className="font-semibold text-pink-600">Vendor</span>
           )}
 
-          {/* NORMAL USER (NOT LOGGED) */}
           {!loading && !user && !isVendorPage && !isAdminPage && !adminLogged && (
             <button onClick={() => setOpen(true)} className="btn-primary">
               Login / Signup
             </button>
           )}
 
-          {/* LOGGED USER / VENDOR / ADMIN */}
+          {/* USER / ADMIN DROPDOWN (CLICK BASED FIX) */}
           {!loading && (user || adminLogged) && (
-            <div className="relative group">
-              <span className="cursor-pointer font-semibold text-pink-600">
+            <div className="relative">
+              <button
+                onClick={() => setProfileOpen(prev => !prev)}
+                className="cursor-pointer font-semibold text-pink-600"
+              >
                 {user?.displayName || user?.username || user?.name || "Admin"}
-              </span>
+              </button>
 
-              <div className="absolute hidden group-hover:block bg-white shadow-lg rounded-lg right-0 mt-2 p-3 min-w-[120px]">
-                <button
-                  onClick={logout}
-                  className="hover:text-red-500 w-full text-left"
-                >
-                  Logout
-                </button>
-              </div>
+              {profileOpen && (
+                <div className="absolute bg-white shadow-lg rounded-lg right-0 mt-2 p-3 min-w-[120px]">
+                  <button
+                    onClick={() => {
+                      setProfileOpen(false)
+                      logout()
+                    }}
+                    className="hover:text-red-500 w-full text-left"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* MOBILE MENU ICON */}
         <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X /> : <Menu />}
         </button>
