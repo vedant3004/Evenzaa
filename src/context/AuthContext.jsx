@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
         username: "Admin",
         displayName: "Admin",
       })
-    }
+    } 
     else if (v) {
       const vendor = JSON.parse(v)
       setUser({
@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
         role: "vendor",
         displayName: vendor.name || vendor.business || "Vendor",
       })
-    }
+    } 
     else if (u) {
       const usr = JSON.parse(u)
       setUser({
@@ -63,16 +63,13 @@ export function AuthProvider({ children }) {
   const isVendorPage = pathname.startsWith("/vendor")
   const isAdminPage = pathname.startsWith("/admin")
 
-  /* ================= USER LOGIN (BACKEND) ================= */
+  /* ================= USER LOGIN ================= */
   const login = async (data) => {
     try {
       const res = await fetch(`${AUTH_API}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
+        body: JSON.stringify(data),
       })
 
       const json = await res.json()
@@ -85,7 +82,7 @@ export function AuthProvider({ children }) {
       }
 
       localStorage.setItem("eventzaa_user", JSON.stringify(u))
-      localStorage.setItem("eventzaa_token", json.token)
+      localStorage.setItem("evenzaa_token", json.token) // ✅ SINGLE TOKEN
 
       localStorage.removeItem("evenzaa_vendor")
       localStorage.removeItem("evenzaa_admin")
@@ -97,39 +94,31 @@ export function AuthProvider({ children }) {
     }
   }
 
-  /* ================= USER REGISTER (BACKEND) ================= */
+  /* ================= USER REGISTER ================= */
   const register = async (data) => {
     try {
       const res = await fetch(`${AUTH_API}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-        }),
+        body: JSON.stringify(data),
       })
 
       const json = await res.json()
       if (!res.ok) throw new Error(json.message)
 
-      // auto login after register
       await login(data)
     } catch (err) {
       alert(err.message)
     }
   }
 
-  /* ================= VENDOR LOGIN (BACKEND) ================= */
+  /* ================= VENDOR LOGIN ================= */
   const loginVendor = async (data) => {
     try {
       const res = await fetch(`${VENDOR_API}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
+        body: JSON.stringify(data),
       })
 
       const json = await res.json()
@@ -142,7 +131,7 @@ export function AuthProvider({ children }) {
       }
 
       localStorage.setItem("evenzaa_vendor", JSON.stringify(v))
-      localStorage.setItem("eventzaa_vendor_token", json.token)
+      localStorage.setItem("evenzaa_token", json.token) // ✅ FIXED & CONSISTENT
 
       localStorage.removeItem("eventzaa_user")
       localStorage.removeItem("evenzaa_admin")
@@ -157,12 +146,13 @@ export function AuthProvider({ children }) {
   /* ================= ADMIN LOGIN ================= */
   const loginAdmin = () => {
     localStorage.setItem("evenzaa_admin", "true")
+    localStorage.setItem("evenzaa_token", "admin")
+
     localStorage.removeItem("eventzaa_user")
     localStorage.removeItem("evenzaa_vendor")
 
     setUser({
       role: "admin",
-      username: "Admin",
       displayName: "Admin",
     })
 
@@ -171,12 +161,7 @@ export function AuthProvider({ children }) {
 
   /* ================= LOGOUT ================= */
   const logout = () => {
-    localStorage.removeItem("eventzaa_user")
-    localStorage.removeItem("evenzaa_vendor")
-    localStorage.removeItem("evenzaa_admin")
-    localStorage.removeItem("eventzaa_token")
-    localStorage.removeItem("eventzaa_vendor_token")
-
+    localStorage.clear()
     setUser(null)
     router.push("/")
   }
@@ -191,17 +176,10 @@ export function AuthProvider({ children }) {
         isVendorPage,
         isAdminPage,
 
-        /* user */
         login,
         register,
-
-        /* vendor */
         loginVendor,
-
-        /* admin */
         loginAdmin,
-
-        /* common */
         logout,
       }}
     >

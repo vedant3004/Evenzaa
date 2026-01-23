@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { BarChart3, Wallet, Crown, X, LogOut } from "lucide-react"
+import { BarChart3, Wallet, Crown, X, LogOut, Store, UserCog } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../../../context/AuthContext"
 
@@ -11,25 +11,39 @@ export default function VendorDash() {
 
   const [vendor, setVendor] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [editOpen, setEditOpen] = useState(false)
 
-  const [form, setForm] = useState({
+  const [businessOpen, allowBusinessOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [successMsg, setSuccessMsg] = useState("")
+
+  // ================= BUSINESS FORM =================
+  const [businessForm, setBusinessForm] = useState({
     business: "",
-    phone: "",
+    service_type: "",
+    price: "",
     city: "",
+    phone: "",
+    image: "",
+    services: "",
     description: "",
   })
 
-  // ✅ FIXED: WAIT FOR AUTH CONTEXT TO RESOLVE
+  // ================= LOAD USER =================
   useEffect(() => {
-    if (user === undefined) return   // ⛔ wait
+    if (user === undefined) return
 
     if (user && user.role === "vendor") {
       setVendor(user)
-      setForm({
-        business: user.business || user.name || "",
-        phone: user.phone || "",
+      setBusinessForm({
+        business: user.name || "",
+        service_type: user.service_type || "",
+        price: user.price || "",
         city: user.city || "",
+        phone: user.phone || "",
+        image: user.image || "",
+        services: Array.isArray(user.services)
+          ? user.services.join(", ")
+          : "",
         description: user.description || "",
       })
     }
@@ -37,52 +51,78 @@ export default function VendorDash() {
     setLoading(false)
   }, [user])
 
-  // 🔥 GLOBAL LOGOUT
   const logoutVendor = () => {
     logout()
     router.push("/vendor/login")
   }
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  const saveProfile = () => {
-    if (!form.business || !form.city) {
-      alert("Please fill required fields")
+  // ================= SAVE BUSINESS =================
+  const saveBusiness = async () => {
+    if (!businessForm.business || !businessForm.city || !businessForm.service_type) {
+      alert("Business name, city and service type required")
       return
     }
 
-    const updatedVendor = {
-      ...vendor,
-      business: form.business,
-      phone: form.phone,
-      city: form.city,
-      description: form.description,
+    // ✅ FIX: CORRECT TOKEN KEY
+    const token = localStorage.getItem("evenzaa_token")
+
+    if (!token) {
+      alert("Session expired. Please login again.")
+      logoutVendor()
+      return
     }
 
-    // 🔥 SYNC WITH AUTH CONTEXT STORAGE
-    localStorage.setItem("evenzaa_vendor", JSON.stringify(updatedVendor))
-    setVendor(updatedVendor)
-    setEditOpen(false)
+    try {
+      setSaving(true)
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/business`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            business: businessForm.business,
+            service_type: businessForm.service_type,
+            price: Number(businessForm.price || 0),
+            city: businessForm.city,
+            phone: businessForm.phone,
+            image: businessForm.image,
+            services: businessForm.services
+              ? businessForm.services.split(",").map(s => s.trim())
+              : [],
+            description: businessForm.description,
+          }),
+        }
+      )
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.message || "Failed to save business")
+        return
+      }
+
+      setSuccessMsg("✅ Business saved successfully! Pending admin approval.")
+      setTimeout(() => setSuccessMsg(""), 3000)
+      allowBusinessOpen(false)
+    } catch (err) {
+      console.error("SAVE BUSINESS ERROR:", err)
+      alert("Server error while saving business")
+    } finally {
+      setSaving(false)
+    }
   }
 
-  // ✅ LOADING STATE
+  // ================= UI STATES =================
   if (loading) {
-    return (
-      <div className="pt-32 text-center text-gray-500">
-        Loading dashboard...
-      </div>
-    )
+    return <div className="pt-32 text-center text-gray-500">Loading dashboard...</div>
   }
 
-  // ✅ AUTH GUARD
   if (!vendor) {
-    return (
-      <div className="pt-32 text-center text-xl font-semibold">
-        Vendor login required
-      </div>
-    )
+    return <div className="pt-32 text-center text-xl">Vendor login required</div>
   }
 
   return (
@@ -90,135 +130,157 @@ export default function VendorDash() {
       <div className="max-w-6xl mx-auto">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex justify-between mb-8">
           <h1 className="text-4xl font-extrabold">
-            Welcome, {vendor.business || vendor.name}
+            Welcome, {vendor.name}
           </h1>
-
-          <button
-            onClick={logoutVendor}
-            className="flex items-center gap-2 px-5 py-2 rounded-full border border-red-400 text-red-500 font-semibold hover:bg-red-50 transition"
-          >
-            <LogOut size={18} />
-            Logout
+          <button onClick={logoutVendor} className="btn-danger flex gap-2">
+            <LogOut size={18} /> Logout
           </button>
         </div>
 
+        {successMsg && (
+          <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-xl font-semibold">
+            {successMsg}
+          </div>
+        )}
+
         {/* STATS */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-5">
-            <Wallet className="text-pink-600" size={34} />
-            <div>
-              <p className="text-gray-500">Total Sales</p>
-              <h2 className="text-2xl font-bold">₹{vendor.sales || 0}</h2>
-            </div>
-          </div>
-
-          <div className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-5">
-            <Crown className="text-yellow-500" size={34} />
-            <div>
-              <p className="text-gray-500">Membership</p>
-              <h2 className="text-2xl font-bold">
-                {vendor.plan || "Standard"}
-              </h2>
-            </div>
-          </div>
-
-          <div className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-5">
-            <BarChart3 className="text-purple-600" size={34} />
-            <div>
-              <p className="text-gray-500">Performance</p>
-              <h2 className="text-2xl font-bold">Excellent</h2>
-            </div>
-          </div>
+          <Stat icon={<Wallet />} label="Total Sales" value={`₹${vendor.sales || 0}`} />
+          <Stat icon={<Crown />} label="Membership" value={vendor.plan || "Standard"} />
+          <Stat icon={<BarChart3 />} label="Performance" value="Excellent" />
         </div>
 
-        {/* ACTIONS */}
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white p-10 rounded-3xl shadow-2xl">
-            <h3 className="text-2xl font-bold mb-4">Business Profile</h3>
-            <p className="text-gray-500 mb-4">
-              Manage your business details visible to customers
-            </p>
-            <button
-              onClick={() => setEditOpen(true)}
-              className="btn-primary w-full"
-            >
-              Edit Business Profile
-            </button>
-          </div>
+        {/* ACTION CARDS */}
+        <div className="grid md:grid-cols-3 gap-8">
+          <ActionCard
+            icon={<Store />}
+            title="Add / Update Business Listing"
+            desc="This listing will be visible to customers"
+            action={() => allowBusinessOpen(true)}
+          />
 
-          <div className="bg-white p-10 rounded-3xl shadow-2xl">
-            <h3 className="text-2xl font-bold mb-4">Bookings & Leads</h3>
-            <p className="text-gray-500 mb-4">
-              View customer enquiries and confirmed bookings
-            </p>
-            <a
-              href="/vendor/dashboard/bookings"
-              className="btn-primary w-full block text-center"
-            >
-              View Bookings
-            </a>
-          </div>
+          <ActionCard
+            icon={<UserCog />}
+            title="Account Settings"
+            desc="Manage your account"
+            link="/vendor/dashboard/account"
+          />
+
+          <ActionCard
+            title="Bookings & Leads"
+            desc="View customer bookings"
+            link="/vendor/dashboard/bookings"
+          />
         </div>
       </div>
 
-      {/* EDIT MODAL */}
-      {editOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
-          <div className="bg-white w-full max-w-lg rounded-2xl p-6 relative shadow-2xl">
+      {/* ================= BUSINESS MODAL ================= */}
+      {businessOpen && (
+        <Modal
+          title="Add / Update Business Listing"
+          onClose={() => allowBusinessOpen(false)}
+          footer={
             <button
-              onClick={() => setEditOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              onClick={saveBusiness}
+              disabled={saving}
+              className="w-full btn-primary"
             >
-              <X />
+              {saving ? "Saving..." : "Save Business"}
             </button>
+          }
+        >
+          <Input label="Business Name" value={businessForm.business}
+            onChange={v => setBusinessForm({ ...businessForm, business: v })} />
 
-            <h2 className="text-2xl font-extrabold mb-6">
-              Edit Business Profile
-            </h2>
+          <Input label="Service Type" value={businessForm.service_type}
+            onChange={v => setBusinessForm({ ...businessForm, service_type: v })} />
 
-            <div className="space-y-4">
-              <input
-                name="business"
-                value={form.business}
-                onChange={handleChange}
-                className="input"
-                placeholder="Business Name"
-              />
-              <input
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                className="input"
-                placeholder="Phone Number"
-              />
-              <input
-                name="city"
-                value={form.city}
-                onChange={handleChange}
-                className="input"
-                placeholder="City"
-              />
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                rows={3}
-                className="input"
-                placeholder="Business Description"
-              />
-            </div>
+          <Input label="Starting Price" value={businessForm.price}
+            onChange={v => setBusinessForm({ ...businessForm, price: v })} />
 
-            <button
-              onClick={saveProfile}
-              className="mt-6 w-full btn-primary"
-            >
-              Save Changes
-            </button>
-          </div>
-        </div>
+          <Input label="City" value={businessForm.city}
+            onChange={v => setBusinessForm({ ...businessForm, city: v })} />
+
+          <Input label="Phone" value={businessForm.phone}
+            onChange={v => setBusinessForm({ ...businessForm, phone: v })} />
+
+          <Input label="Image URL" value={businessForm.image}
+            onChange={v => setBusinessForm({ ...businessForm, image: v })} />
+
+          <textarea
+            className="input"
+            rows={2}
+            placeholder="Services (comma separated)"
+            value={businessForm.services}
+            onChange={e => setBusinessForm({ ...businessForm, services: e.target.value })}
+          />
+
+          <textarea
+            className="input"
+            rows={3}
+            placeholder="Business Description"
+            value={businessForm.description}
+            onChange={e => setBusinessForm({ ...businessForm, description: e.target.value })}
+          />
+        </Modal>
       )}
     </div>
   )
 }
+
+/* ================= COMPONENTS ================= */
+
+const Stat = ({ icon, label, value }) => (
+  <div className="bg-white p-6 rounded-xl shadow flex gap-4 items-center">
+    {icon}
+    <div>
+      <p className="text-gray-500">{label}</p>
+      <h3 className="font-bold text-xl">{value}</h3>
+    </div>
+  </div>
+)
+
+const ActionCard = ({ icon, title, desc, action, link }) => (
+  <div className="bg-white p-8 rounded-2xl shadow-xl">
+    {icon}
+    <h3 className="font-bold text-xl mt-4">{title}</h3>
+    <p className="text-gray-500 mb-4">{desc}</p>
+    {action ? (
+      <button onClick={action} className="btn-primary w-full">Open</button>
+    ) : (
+      <a href={link} className="btn-primary block text-center">View</a>
+    )}
+  </div>
+)
+
+const Modal = ({ title, children, onClose, footer }) => (
+  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+    <div className="bg-white w-full max-w-xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col">
+      <div className="flex justify-between items-center px-6 py-4 border-b">
+        <h2 className="text-xl font-bold">{title}</h2>
+        <button onClick={onClose}><X /></button>
+      </div>
+
+      <div className="px-6 py-4 overflow-y-auto space-y-4">
+        {children}
+      </div>
+
+      <div className="px-6 py-4 border-t bg-white">
+        {footer}
+      </div>
+    </div>
+  </div>
+)
+
+const Input = ({ label, value, onChange }) => (
+  <div>
+    <label className="text-sm text-gray-500">{label}</label>
+    <input
+      className="input mt-1"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+    />
+  </div>
+)

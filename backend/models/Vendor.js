@@ -21,15 +21,48 @@ const Vendor = sequelize.define(
       allowNull: false,
     },
 
+    // ================= CONTACT INFO =================
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    city: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
     // ================= BUSINESS INFO =================
     service_type: {
       type: DataTypes.STRING,
       allowNull: true,
     },
 
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
+    services: {
+      // ["Birthday Decoration", "Wedding Setup", ...]
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+
     price: {
       type: DataTypes.FLOAT,
       allowNull: true,
+    },
+
+    image: {
+      // banner / cover image
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    rating: {
+      type: DataTypes.FLOAT,
+      defaultValue: 4.5, // ⭐ default trust rating
     },
 
     // ================= ADMIN CONTROL =================
