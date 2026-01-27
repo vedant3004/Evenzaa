@@ -24,6 +24,7 @@ export default function VendorDetailPage() {
         )
 
         const data = await res.json()
+
         if (!res.ok) {
           setVendor(null)
           return
@@ -78,13 +79,13 @@ export default function VendorDetailPage() {
   return (
     <motion.div className="pt-32 pb-20 max-w-6xl mx-auto px-4 bg-[#0B1120] min-h-screen">
       <div className="grid md:grid-cols-2 gap-10 items-center mb-14">
-
-        <div className="relative w-full h-[320px] rounded-2xl overflow-hidden shadow-2xl border border-[#1F2937]">
+        <div className="relative w-full h-[320px] rounded-2xl overflow-hidden shadow-2xl">
           <Image
             src={vendor.image}
             fill
             alt={vendor.name}
             className="object-cover"
+            unoptimized
           />
         </div>
 
@@ -117,10 +118,7 @@ export default function VendorDetailPage() {
           </p>
 
           <div className="flex gap-4 flex-wrap">
-            <button
-              onClick={handleBook}
-              className="btn-primary"
-            >
+            <button onClick={handleBook} className="btn-primary">
               Book Now
             </button>
 
