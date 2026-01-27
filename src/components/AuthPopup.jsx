@@ -48,10 +48,10 @@ export default function AuthPopup() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-white rounded-2xl p-8 w-full max-w-md relative">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-[#111827] text-white rounded-2xl p-8 w-full max-w-md relative border border-[#1F2937]">
 
-        <h2 className="text-2xl font-bold text-center mb-4">
+        <h2 className="text-2xl font-bold text-center mb-4 text-white">
           {mode === "login" ? "Login" : "Register"}
         </h2>
 
@@ -94,13 +94,13 @@ export default function AuthPopup() {
           {mode === "login" ? "Login" : "Register"}
         </button>
 
-        <p className="text-center mt-3 text-sm">
+        <p className="text-center mt-3 text-sm text-[#9CA3AF]">
           {mode === "login" ? (
             <>
               New here?
               <button
                 onClick={() => setMode("register")}
-                className="text-pink-500 ml-1"
+                className="text-[#3B82F6] ml-1 font-medium"
               >
                 Register
               </button>
@@ -110,7 +110,7 @@ export default function AuthPopup() {
               Already have account?
               <button
                 onClick={() => setMode("login")}
-                className="text-pink-500 ml-1"
+                className="text-[#3B82F6] ml-1 font-medium"
               >
                 Login
               </button>
@@ -120,7 +120,7 @@ export default function AuthPopup() {
 
         <button
           onClick={() => setOpen(false)}
-          className="absolute top-3 right-4 text-xl"
+          className="absolute top-3 right-4 text-xl text-[#9CA3AF] hover:text-white"
         >
           ✖
         </button>

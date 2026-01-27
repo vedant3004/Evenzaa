@@ -42,9 +42,9 @@ export default function VendorRegister() {
   /* ================= PLAN SELECTION ================= */
   if (!plan) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0B1120] px-4">
 
-        <h2 className="text-3xl font-extrabold mb-10">
+        <h2 className="text-3xl font-extrabold mb-10 text-white">
           Choose Your Membership
         </h2>
 
@@ -54,21 +54,21 @@ export default function VendorRegister() {
             return (
               <div
                 key={p.name}
-                className="bg-white p-8 rounded-3xl shadow-xl text-center hover:scale-105 transition cursor-pointer"
+                className="bg-[#111827] border border-[#1F2937] p-8 rounded-3xl shadow-xl text-center hover:scale-105 transition cursor-pointer"
                 onClick={() => setPlan(p.name)}
               >
                 <div className="flex justify-center mb-4">
-                  <div className="w-14 h-14 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-cyan-900/40 text-cyan-400 flex items-center justify-center shadow-inner">
                     <Icon size={26} />
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold">{p.name}</h3>
-                <p className="text-pink-600 font-semibold my-2">
+                <h3 className="text-xl font-bold text-white">{p.name}</h3>
+                <p className="text-cyan-400 font-semibold my-2">
                   {p.price}
                 </p>
 
-                <ul className="text-gray-500 text-sm space-y-1">
+                <ul className="text-gray-400 text-sm space-y-1">
                   {p.perks.map((x) => (
                     <li key={x}>✔ {x}</li>
                   ))}
@@ -96,7 +96,7 @@ export default function VendorRegister() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: form.business,
-          email: form.username,      // email = username
+          email: form.username,
           password: form.password,
           service_type: plan,
           price: 0,
@@ -120,15 +120,15 @@ export default function VendorRegister() {
 
   /* ================= REGISTER FORM ================= */
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100">
+    <div className="min-h-screen flex items-center justify-center bg-[#0B1120] px-4">
 
-      <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md">
+      <div className="bg-[#0F172A] border border-[#1F2937] p-10 rounded-3xl shadow-2xl w-full max-w-md">
 
-        <h2 className="text-3xl font-extrabold text-center mb-2">
+        <h2 className="text-3xl font-extrabold text-center mb-2 text-white">
           {plan} Membership Registration
         </h2>
 
-        <p className="text-center text-gray-500 mb-8">
+        <p className="text-center text-gray-400 mb-8">
           Create your vendor account to start receiving leads
         </p>
 
@@ -171,7 +171,7 @@ export default function VendorRegister() {
           {loading ? "Registering..." : "Complete Registration"}
         </button>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-gray-500 mt-6">
           © {new Date().getFullYear()} EventZaa Vendor Membership
         </p>
       </div>

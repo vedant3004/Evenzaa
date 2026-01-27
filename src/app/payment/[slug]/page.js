@@ -39,42 +39,52 @@ export default function PaymentPage() {
 
     localStorage.removeItem("pendingBooking")
 
-    router.push("/success")   // 👉 redirect to animated success page
+    router.push("/success")
   }
 
   return (
-    <div className="pt-32 max-w-4xl mx-auto px-4 pb-20">
+    <div className="pt-32 max-w-4xl mx-auto px-4 pb-20 bg-[#0B1120] min-h-screen">
 
-      <h1 className="text-4xl font-extrabold mb-10 text-center">
+      <h1 className="text-4xl font-extrabold mb-10 text-center text-white">
         Payment for {vendor.name}
       </h1>
 
-      <div className="bg-white p-8 rounded-2xl shadow-lg space-y-6">
+      <div className="bg-[#111827] p-8 rounded-2xl shadow-lg space-y-6 border border-[#1F2937]">
 
-        <div className="space-y-2 text-gray-700">
-          <p><b>Service:</b> {vendor.service}</p>
-          <p><b>Amount:</b> ₹{vendor.price}</p>
-          <p><b>Name:</b> {data.address?.name}</p>
-          <p><b>Phone:</b> {data.address?.phone}</p>
-          <p><b>City:</b> {data.address?.city}</p>
-          <p><b>Address:</b> {data.address?.address}</p>
+        <div className="space-y-2 text-[#9CA3AF]">
+          <p><b className="text-white">Service:</b> {vendor.service}</p>
+          <p><b className="text-white">Amount:</b> ₹{vendor.price}</p>
+          <p><b className="text-white">Name:</b> {data.address?.name}</p>
+          <p><b className="text-white">Phone:</b> {data.address?.phone}</p>
+          <p><b className="text-white">City:</b> {data.address?.city}</p>
+          <p><b className="text-white">Address:</b> {data.address?.address}</p>
         </div>
 
-        <h2 className="text-xl font-bold">Select Payment Method</h2>
+        <h2 className="text-xl font-bold text-white">
+          Select Payment Method
+        </h2>
 
-        <label className="flex gap-2">
-          <input type="radio" checked={method==="cash"} onChange={()=>setMethod("cash")} />
+        <label className="flex gap-2 text-[#9CA3AF] items-center">
+          <input
+            type="radio"
+            checked={method === "cash"}
+            onChange={() => setMethod("cash")}
+          />
           Pay on Event (Cash)
         </label>
 
-        <label className="flex gap-2">
-          <input type="radio" checked={method==="upi"} onChange={()=>setMethod("upi")} />
+        <label className="flex gap-2 text-[#9CA3AF] items-center">
+          <input
+            type="radio"
+            checked={method === "upi"}
+            onChange={() => setMethod("upi")}
+          />
           UPI Payment
         </label>
 
         <button
           onClick={confirmPayment}
-          className="w-full mt-6 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:scale-105 transition"
+          className="w-full mt-6 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white font-semibold hover:scale-105 transition"
         >
           <CheckCircle size={18} />
           Confirm & Complete Booking

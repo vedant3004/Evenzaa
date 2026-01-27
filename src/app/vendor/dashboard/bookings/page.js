@@ -9,7 +9,6 @@ export default function VendorBookings() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // ✅ Vendor data
     const v = localStorage.getItem("evenzaa_vendor")
     if (!v) {
       setLoading(false)
@@ -19,10 +18,8 @@ export default function VendorBookings() {
     const vendorData = JSON.parse(v)
     setVendor(vendorData)
 
-    // ✅ All bookings
     const all = JSON.parse(localStorage.getItem("bookings") || "[]")
 
-    // ✅ Only this vendor bookings
     const filtered = all.filter(
       (b) => b.vendorId === vendorData.id
     )
@@ -31,7 +28,6 @@ export default function VendorBookings() {
     setLoading(false)
   }, [])
 
-  // 🔄 Update booking status
   const updateStatus = (id, status) => {
     const all = JSON.parse(localStorage.getItem("bookings") || "[]")
 
@@ -44,14 +40,13 @@ export default function VendorBookings() {
     setBookings(updated.filter(b => b.vendorId === vendor.id))
   }
 
-  // 💰 Earnings (fake but realistic)
   const totalEarnings = bookings
     .filter(b => b.status === "Confirmed")
     .reduce((sum, b) => sum + Number(b.price), 0)
 
   if (loading) {
     return (
-      <div className="pt-32 text-center text-gray-500">
+      <div className="pt-32 text-center text-gray-400">
         Loading bookings...
       </div>
     )
@@ -59,36 +54,36 @@ export default function VendorBookings() {
 
   if (!vendor) {
     return (
-      <div className="pt-32 text-center text-xl font-semibold">
+      <div className="pt-32 text-center text-xl font-semibold text-gray-300">
         Vendor login required
       </div>
     )
   }
 
   return (
-    <div className="pt-32 pb-20 max-w-6xl mx-auto px-4">
+    <div className="pt-32 pb-20 max-w-6xl mx-auto px-4 bg-[#0B1120] min-h-screen">
 
       {/* HEADER */}
       <div className="mb-10">
-        <h1 className="text-4xl font-extrabold mb-2">
+        <h1 className="text-4xl font-extrabold mb-2 text-white">
           My Bookings
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-400">
           Manage customer bookings and update status
         </p>
 
-        <p className="mt-3 text-lg font-semibold text-pink-600">
+        <p className="mt-3 text-lg font-semibold text-cyan-400">
           Total Earnings: ₹{totalEarnings}
         </p>
       </div>
 
       {/* EMPTY */}
       {bookings.length === 0 && (
-        <div className="bg-gray-50 p-12 rounded-2xl text-center shadow">
-          <h3 className="text-xl font-bold mb-2">
+        <div className="bg-[#111827] border border-[#1F2937] p-12 rounded-2xl text-center shadow">
+          <h3 className="text-xl font-bold mb-2 text-white">
             No bookings yet
           </h3>
-          <p className="text-gray-500">
+          <p className="text-gray-400">
             Customer bookings will appear here.
           </p>
         </div>
@@ -99,31 +94,31 @@ export default function VendorBookings() {
         {bookings.map((b) => (
           <div
             key={b.id}
-            className="bg-white p-6 rounded-2xl shadow-lg space-y-4"
+            className="bg-[#111827] border border-[#1F2937] p-6 rounded-2xl shadow-lg space-y-4"
           >
             {/* TOP */}
             <div className="flex flex-col md:flex-row md:justify-between gap-4">
               <div>
-                <h3 className="font-bold text-xl">
+                <h3 className="font-bold text-xl text-white">
                   {b.vendorName}
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-gray-400">
                   {b.service}
                 </p>
               </div>
 
               <div className="flex items-center gap-4">
-                <span className="font-bold text-pink-600 text-lg">
+                <span className="font-bold text-cyan-400 text-lg">
                   ₹{b.price}
                 </span>
 
                 <span
                   className={`px-3 py-1 text-sm rounded-full font-semibold ${
                     b.status === "Cancelled"
-                      ? "bg-red-100 text-red-600"
+                      ? "bg-red-900/40 text-red-400 border border-red-700"
                       : b.status === "Confirmed"
-                      ? "bg-green-100 text-green-600"
-                      : "bg-yellow-100 text-yellow-600"
+                      ? "bg-emerald-900/40 text-emerald-400 border border-emerald-700"
+                      : "bg-yellow-900/40 text-yellow-400 border border-yellow-700"
                   }`}
                 >
                   {b.status}
@@ -132,10 +127,10 @@ export default function VendorBookings() {
             </div>
 
             {/* CUSTOMER */}
-            <div className="flex gap-3 text-sm text-gray-600">
+            <div className="flex gap-3 text-sm text-gray-400">
               <MapPin size={18} />
               <div>
-                <p className="font-medium text-gray-800">
+                <p className="font-medium text-gray-200">
                   {b.address?.name} ({b.address?.phone})
                 </p>
                 <p>
@@ -149,7 +144,7 @@ export default function VendorBookings() {
               <div className="flex gap-4 pt-2">
                 <button
                   onClick={() => updateStatus(b.id, "Confirmed")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600 transition"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition"
                 >
                   <CheckCircle size={18} />
                   Accept
@@ -157,7 +152,7 @@ export default function VendorBookings() {
 
                 <button
                   onClick={() => updateStatus(b.id, "Cancelled")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition"
                 >
                   <XCircle size={18} />
                   Reject

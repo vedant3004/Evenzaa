@@ -1,7 +1,7 @@
 "use client"
 import Image from "next/image"
 import Link from "next/link"
-import { Facebook, Instagram, Twitter, Linkedin, Mail, Phone, MapPin } from "lucide-react"
+import { Facebook, Instagram, Twitter, Linkedin } from "lucide-react"
 import { useEffect, useRef } from "react"
 
 export default function Footer() {
@@ -32,23 +32,28 @@ export default function Footer() {
   return (
     <footer
       ref={footerRef}
-      className="bg-gradient-to-r from-[#020617] to-[#0f172a] text-gray-300 pt-20 opacity-0 translate-y-10 transition-all duration-[1200ms] ease-out"
+      className="bg-gradient-to-r from-[#0B1120] to-[#020617] text-[#9CA3AF] pt-20 opacity-0 translate-y-10 transition-all duration-[1200ms] ease-out"
     >
       <div className="max-w-7xl mx-auto px-6 grid gap-14 grid-cols-1 lg:grid-cols-4 pb-16">
 
         {/* ================= BRAND ================= */}
         <div className="flex gap-6 items-start text-left reveal">
           <div className="relative w-16 h-16 md:w-20 md:h-20 shrink-0">
-            <div className="absolute inset-0 rounded-full bg-pink-500 blur-2xl opacity-60 animate-pulse" />
-            <Image src="/logo/VY.png" fill className="relative z-10 object-contain" alt="EventZaa" />
+            <div className="absolute inset-0 rounded-full bg-[#2563EB] blur-2xl opacity-60 animate-pulse" />
+            <Image
+              src="/logo/VY.png"
+              fill
+              className="relative z-10 object-contain"
+              alt="EventZaa"
+            />
           </div>
 
           <div>
-            <h2 className="text-xl md:text-2xl font-extrabold text-pink-400 mb-2 drop-shadow-[0_0_8px_#ec4899]">
+            <h2 className="text-xl md:text-2xl font-extrabold text-white mb-2 drop-shadow-[0_0_8px_#2563EB]">
               𝓔𝓿𝓮𝓷𝓩𝓪𝓪
             </h2>
 
-            <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+            <p className="text-[#9CA3AF] text-sm leading-relaxed max-w-sm">
               EvenZaa helps you plan unforgettable events by connecting you with verified vendors,
               premium venues, and reliable services.
             </p>
@@ -58,7 +63,7 @@ export default function Footer() {
                 <Icon
                   key={i}
                   size={18}
-                  className="text-gray-400 hover:text-pink-400 hover:scale-110 transition cursor-pointer"
+                  className="text-[#9CA3AF] hover:text-[#3B82F6] hover:scale-110 transition cursor-pointer"
                 />
               ))}
             </div>
@@ -76,9 +81,12 @@ export default function Footer() {
           ].map((sec, i) => (
             <div key={i} className="footer-group reveal">
               <h3 className="footer-title">{sec.title}</h3>
-              <ul className="space-y-3 text-gray-400 text-sm">
+              <ul className="space-y-3 text-[#9CA3AF] text-sm">
                 {sec.data.map((t, idx) => (
-                  <li key={idx} className="hover:text-pink-400 cursor-pointer transition">
+                  <li
+                    key={idx}
+                    className="hover:text-[#3B82F6] cursor-pointer transition"
+                  >
                     {sec.title === "Portals" && t === "Admin Login" ? (
                       <Link href="/admin/login" className="inline-block">
                         Admin Login
@@ -96,13 +104,13 @@ export default function Footer() {
       </div>
 
       {/* ================= BOTTOM BAR ================= */}
-      <div className="border-t border-white/10 bg-[#020617] py-6 text-gray-400 text-sm reveal">
+      <div className="border-t border-white/10 bg-[#020617] py-6 text-[#9CA3AF] text-sm reveal">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <span>© {new Date().getFullYear()} EvenZaa. All Rights Reserved.</span>
           <div className="flex gap-6">
-            <span className="hover:text-pink-400 cursor-pointer">Privacy Policy</span>
-            <span className="hover:text-pink-400 cursor-pointer">Terms of Service</span>
-            <span className="hover:text-pink-400 cursor-pointer">Sitemap</span>
+            <span className="hover:text-[#3B82F6] cursor-pointer">Privacy Policy</span>
+            <span className="hover:text-[#3B82F6] cursor-pointer">Terms of Service</span>
+            <span className="hover:text-[#3B82F6] cursor-pointer">Sitemap</span>
           </div>
         </div>
       </div>
@@ -132,11 +140,11 @@ export default function Footer() {
         .footer-title {
           position: relative;
           display: inline-block;
-          color: #f472b6;
+          color: #3B82F6;
           font-weight: 600;
           margin-bottom: 1.25rem;
           letter-spacing: 0.04em;
-          text-shadow: 0 0 12px rgba(236,72,153,0.8);
+          text-shadow: 0 0 12px rgba(59,130,246,0.8);
           cursor: pointer;
         }
 
@@ -147,8 +155,8 @@ export default function Footer() {
           bottom: -6px;
           width: 0%;
           height: 2px;
-          background: linear-gradient(90deg, #ec4899, #a855f7);
-          box-shadow: 0 0 12px #ec4899;
+          background: linear-gradient(90deg, #2563EB, #3B82F6);
+          box-shadow: 0 0 12px #2563EB;
           transform: translateX(-50%);
           transition: width 0.45s ease;
         }

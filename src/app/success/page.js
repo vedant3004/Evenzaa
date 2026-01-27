@@ -20,30 +20,36 @@ export default function Success() {
   }, [])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-500 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#0B1120] px-4">
 
-      <div className="bg-white rounded-3xl shadow-2xl p-10 text-center max-w-md w-full animate-fade-in">
+      <div className="bg-[#111827] rounded-3xl shadow-2xl p-10 text-center max-w-md w-full animate-fade-in border border-[#1F2937]">
 
         <div className="relative mb-6">
-          <CheckCircle size={90} className="text-green-500 mx-auto animate-bounce" />
-          <PartyPopper size={34} className="absolute -top-3 -right-3 text-yellow-500 animate-ping" />
+          <CheckCircle
+            size={90}
+            className="text-emerald-400 mx-auto animate-bounce"
+          />
+          <PartyPopper
+            size={34}
+            className="absolute -top-3 -right-3 text-yellow-400 animate-ping"
+          />
         </div>
 
-        <h1 className="text-4xl font-extrabold mb-2 text-gray-800">
+        <h1 className="text-4xl font-extrabold mb-2 text-white">
           Booking Successful 🎉
         </h1>
 
-        <p className="text-gray-500 mb-6">
+        <p className="text-[#9CA3AF] mb-6">
           Your vendor has been booked successfully.
         </p>
 
         {/* BOOKING SUMMARY */}
         {booking && (
-          <div className="bg-gray-100 rounded-xl p-4 text-sm text-left space-y-1 mb-6">
-            <p><b>Vendor:</b> {booking.vendorName}</p>
-            <p><b>Service:</b> {booking.service}</p>
-            <p><b>Amount:</b> ₹{booking.price}</p>
-            <p><b>Status:</b> {booking.status}</p>
+          <div className="bg-[#0F172A] rounded-xl p-4 text-sm text-left space-y-1 mb-6 text-[#9CA3AF] border border-[#1F2937]">
+            <p><b className="text-white">Vendor:</b> {booking.vendorName}</p>
+            <p><b className="text-white">Service:</b> {booking.service}</p>
+            <p><b className="text-white">Amount:</b> ₹{booking.price}</p>
+            <p><b className="text-white">Status:</b> {booking.status}</p>
           </div>
         )}
 
@@ -51,7 +57,7 @@ export default function Success() {
           View My Bookings
         </Link>
 
-        <p className="text-xs text-gray-400 mt-4">
+        <p className="text-xs text-[#9CA3AF] mt-4">
           Redirecting to My Bookings in 6 seconds...
         </p>
       </div>

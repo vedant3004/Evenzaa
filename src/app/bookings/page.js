@@ -39,17 +39,17 @@ export default function Bookings() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="pt-32 max-w-6xl mx-auto px-4 pb-20"
+      className="pt-32 max-w-6xl mx-auto px-4 pb-20 bg-[#0B1120] min-h-screen"
     >
       <motion.h1
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="text-4xl font-extrabold mb-2"
+        className="text-4xl font-extrabold mb-2 text-white"
       >
         My Bookings
       </motion.h1>
 
-      <p className="text-gray-600 mb-10">
+      <p className="text-[#9CA3AF] mb-10">
         Track, manage, and review your bookings.
       </p>
 
@@ -57,10 +57,14 @@ export default function Bookings() {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-gray-50 p-12 rounded-2xl text-center shadow"
+          className="bg-[#111827] p-12 rounded-2xl text-center shadow border border-[#1F2937]"
         >
-          <h3 className="text-xl font-bold mb-2">No bookings yet</h3>
-          <p className="text-gray-500">Book your first vendor now.</p>
+          <h3 className="text-xl font-bold mb-2 text-white">
+            No bookings yet
+          </h3>
+          <p className="text-[#9CA3AF]">
+            Book your first vendor now.
+          </p>
         </motion.div>
       )}
 
@@ -76,22 +80,28 @@ export default function Bookings() {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ duration: 0.4 }}
-                className="bg-white p-6 rounded-2xl shadow-lg space-y-4"
+                className="bg-[#111827] p-6 rounded-2xl shadow-lg space-y-4 border border-[#1F2937]"
               >
                 {/* TOP */}
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-bold text-xl">{b.vendorName}</h3>
-                    <p className="text-gray-500">{b.service}</p>
+                    <h3 className="font-bold text-xl text-white">
+                      {b.vendorName}
+                    </h3>
+                    <p className="text-[#9CA3AF]">
+                      {b.service}
+                    </p>
                   </div>
 
                   <div className="flex gap-4 items-center">
-                    <span className="font-bold text-pink-600">₹{b.price}</span>
+                    <span className="font-bold text-[#3B82F6]">
+                      ₹{b.price}
+                    </span>
                     <span
                       className={`px-3 py-1 text-sm rounded-full font-semibold ${
                         b.status === "Cancelled"
-                          ? "bg-red-100 text-red-600"
-                          : "bg-green-100 text-green-600"
+                          ? "bg-red-900/30 text-red-400"
+                          : "bg-emerald-900/30 text-emerald-400"
                       }`}
                     >
                       {b.status}
@@ -100,21 +110,21 @@ export default function Bookings() {
                 </div>
 
                 {/* ADDRESS */}
-                <div className="flex gap-3 text-sm text-gray-600">
+                <div className="flex gap-3 text-sm text-[#9CA3AF]">
                   <MapPin size={18} />
                   <div>
-                    <p className="font-medium">
+                    <p className="font-medium text-white">
                       {(addr.name || "N/A")} ({addr.phone || "-"})
                     </p>
                     <p>
-                      {(addr.address || "No address")}{" "}
+                      {(addr.address || "No address")}
                       {addr.city ? `, ${addr.city}` : ""}
                     </p>
                   </div>
                 </div>
 
                 {/* PAYMENT */}
-                <div className="flex gap-3 text-sm text-gray-600">
+                <div className="flex gap-3 text-sm text-[#9CA3AF]">
                   <CreditCard size={18} />
                   <span>{b.paymentMethod || "Pay on Event"}</span>
                 </div>
@@ -123,7 +133,7 @@ export default function Bookings() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => setCancelId(b.id)}
-                    className="flex items-center gap-2 text-red-600 font-semibold"
+                    className="flex items-center gap-2 text-red-400 font-semibold"
                   >
                     <XCircle size={18} />
                     Cancel Booking
@@ -142,24 +152,24 @@ export default function Bookings() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
           >
             <motion.div
               initial={{ scale: 0.85 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.85 }}
-              className="bg-white rounded-2xl p-8 w-full max-w-md text-center shadow-2xl"
+              className="bg-[#111827] rounded-2xl p-8 w-full max-w-md text-center shadow-2xl border border-[#1F2937]"
             >
-              <h2 className="text-2xl font-bold mb-4">
+              <h2 className="text-2xl font-bold mb-4 text-white">
                 Cancel Booking?
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-[#9CA3AF] mb-6">
                 Are you sure you want to cancel?
               </p>
               <div className="flex justify-center gap-4">
                 <button
                   onClick={() => setCancelId(null)}
-                  className="border px-6 py-2 rounded-lg"
+                  className="border border-[#1F2937] px-6 py-2 rounded-lg text-[#9CA3AF]"
                 >
                   No
                 </button>

@@ -8,7 +8,7 @@ import { AnimatePresence } from "framer-motion"
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 text-gray-900 overflow-x-hidden">
+      <body className="bg-[#0B1120] text-white overflow-x-hidden">
 
         <AuthProvider>
 
@@ -17,7 +17,7 @@ export default function RootLayout({ children }) {
 
           {/* 🔥 PAGE TRANSITION WRAPPER */}
           <AnimatePresence mode="wait">
-            <main className="bg-gradient-to-b from-white via-pink-50 to-purple-50 min-h-screen">
+            <main className="bg-gradient-to-b from-[#0B1120] via-[#111827] to-[#0B1120] min-h-screen">
               {children}
             </main>
           </AnimatePresence>

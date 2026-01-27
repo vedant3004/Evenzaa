@@ -6,24 +6,31 @@
    GLOBAL THEME VARIABLES
 ================================ */
 :root {
-  --bg: #f8f9fc;
-  --surface: #ffffff;
-  --surface-soft: #fdf2f8;
-  --text: #111827;
-  --muted-text: #4b5563;
-  --border: #e5e7eb;
+  --bg: #0B1120;              /* Dark navy background */
+  --surface: #111827;         /* Cards */
+  --surface-soft: #0F172A;    /* Soft sections */
+  --text: #FFFFFF;            /* Main text */
+  --muted-text: #9CA3AF;      /* Muted gray */
+  --border: #1F2937;
+
+  /* BRAND */
+  --primary: #2563EB;         /* Royal Blue */
+  --primary-soft: #3B82F6;
 }
 
 /* ===============================
    DARK MODE VARIABLES
 ================================ */
 .dark {
-  --bg: #020617;
-  --surface: #020617;
-  --surface-soft: #020617;
-  --text: #e5e7eb;
-  --muted-text: #9ca3af;
-  --border: #1f2933;
+  --bg: #0B1120;
+  --surface: #111827;
+  --surface-soft: #0F172A;
+  --text: #FFFFFF;
+  --muted-text: #9CA3AF;
+  --border: #1F2937;
+
+  --primary: #2563EB;
+  --primary-soft: #3B82F6;
 }
 
 /* ===============================
@@ -38,6 +45,7 @@ body {
   background-color: var(--bg);
   color: var(--text);
   transition: background-color 0.3s ease, color 0.3s ease;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 /* ===============================
@@ -55,7 +63,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #a855f7, #ec4899);
+  background: linear-gradient(
+    to bottom,
+    var(--primary),
+    #1D4ED8
+  );
   border-radius: 10px;
 }
 
@@ -69,11 +81,11 @@ body {
 .input {
   width: 100%;
   padding: 0.75rem;
-  border-radius: 0.5rem;
+  border-radius: 0.6rem;
   border: 1px solid var(--border);
   background-color: var(--surface);
   color: var(--text);
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .input::placeholder {
@@ -82,22 +94,33 @@ body {
 
 .input:focus {
   outline: none;
-  border-color: #ec4899;
-  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.3);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
 }
 
 /* ===============================
    BUTTONS
 ================================ */
 .btn-primary {
-  background-image: linear-gradient(to right, #a855f7, #ec4899);
+  background-image: linear-gradient(
+    to right,
+    #2563EB,
+    #3B82F6
+  );
   color: white;
-  padding: 0.6rem 1.5rem;
+  padding: 0.6rem 1.6rem;
   border-radius: 9999px;
   font-weight: 600;
-  transition: transform 0.2s ease;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 18px rgba(37, 99, 235, 0.45);
 }
 
 .btn-primary:hover {
-  transform: scale(1.05);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 0 28px rgba(37, 99, 235, 0.65);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
 }

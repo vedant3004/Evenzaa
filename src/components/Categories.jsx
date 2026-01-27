@@ -38,7 +38,7 @@ const item = {
 
 export default function Categories() {
   return (
-    <section className="py-24 bg-white text-center overflow-hidden">
+    <section className="py-24 bg-[#0B1120] text-center overflow-hidden">
 
       {/* TITLE */}
       <motion.h2
@@ -46,7 +46,7 @@ export default function Categories() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="text-4xl font-extrabold mb-14"
+        className="text-4xl font-extrabold mb-14 text-white"
       >
         Popular Event Categories
       </motion.h2>
@@ -65,7 +65,7 @@ export default function Categories() {
 
               <div
                 className="relative rounded-2xl shadow-xl cursor-pointer overflow-hidden
-                           hover:shadow-[0_25px_80px_-20px_rgba(236,72,153,0.5)]
+                           hover:shadow-[0_25px_80px_-20px_rgba(37,99,235,0.55)]
                            transition-all duration-500 group"
               >
                 {/* 🔥 BACKGROUND IMAGE */}
@@ -75,24 +75,24 @@ export default function Categories() {
                 />
 
                 {/* 🔥 DARK GRADIENT OVERLAY */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#020617]/80 via-[#020617]/40 to-transparent" />
 
                 {/* glowing orb */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-pink-400/40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition" />
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#2563EB]/40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition" />
 
                 {/* content */}
                 <div className="relative z-10 p-10 text-left">
-                  <h3 className="font-extrabold text-xl mb-2 text-white group-hover:text-pink-400 transition">
+                  <h3 className="font-extrabold text-xl mb-2 text-white group-hover:text-[#3B82F6] transition">
                     {c.name}
                   </h3>
 
-                  <p className="text-gray-200 text-sm">
+                  <p className="text-[#E5E7EB] text-sm">
                     1000+ events
                   </p>
                 </div>
 
                 {/* shine line */}
-                <div className="absolute bottom-0 left-0 h-[3px] w-0 bg-gradient-to-r from-pink-500 to-purple-500 group-hover:w-full transition-all duration-700" />
+                <div className="absolute bottom-0 left-0 h-[3px] w-0 bg-gradient-to-r from-[#2563EB] to-[#3B82F6] group-hover:w-full transition-all duration-700" />
               </div>
 
             </Link>

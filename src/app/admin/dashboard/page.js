@@ -58,70 +58,82 @@ export default function AdminDash() {
 
   if (!admin) {
     return (
-      <div className="pt-32 text-center text-gray-500">
+      <div className="pt-32 text-center text-[#9CA3AF]">
         Checking admin session...
       </div>
     )
   }
 
   return (
-    <div className="pt-32 min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 px-4">
+    <div className="pt-32 min-h-screen bg-[#0B1120] px-4">
       <div className="max-w-7xl mx-auto">
 
-        <h1 className="text-4xl font-extrabold mb-10">Admin Dashboard</h1>
+        <h1 className="text-4xl font-extrabold mb-10 text-white">
+          Admin Dashboard
+        </h1>
 
         {/* ================= STATS ================= */}
         <div className="grid md:grid-cols-4 gap-6 mb-12">
           <div
             onClick={() => setView("vendors")}
-            className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-4 cursor-pointer hover:scale-105 transition"
+            className="bg-[#111827] p-8 rounded-2xl shadow-xl flex items-center gap-4 cursor-pointer hover:scale-105 transition border border-[#1F2937]"
           >
-            <Store className="text-pink-600" size={32} />
+            <Store className="text-[#3B82F6]" size={32} />
             <div>
-              <p className="text-gray-500">Total Vendors</p>
-              <h2 className="text-2xl font-bold">{vendors.length}</h2>
+              <p className="text-[#9CA3AF]">Total Vendors</p>
+              <h2 className="text-2xl font-bold text-white">
+                {vendors.length}
+              </h2>
             </div>
           </div>
 
           <div
             onClick={() => setView("users")}
-            className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-4 cursor-pointer hover:scale-105 transition"
+            className="bg-[#111827] p-8 rounded-2xl shadow-xl flex items-center gap-4 cursor-pointer hover:scale-105 transition border border-[#1F2937]"
           >
-            <Users className="text-purple-600" size={32} />
+            <Users className="text-[#2563EB]" size={32} />
             <div>
-              <p className="text-gray-500">Total Users</p>
-              <h2 className="text-2xl font-bold">{users.length}</h2>
+              <p className="text-[#9CA3AF]">Total Users</p>
+              <h2 className="text-2xl font-bold text-white">
+                {users.length}
+              </h2>
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-4">
-            <Wallet className="text-green-600" size={32} />
+          <div className="bg-[#111827] p-8 rounded-2xl shadow-xl flex items-center gap-4 border border-[#1F2937]">
+            <Wallet className="text-emerald-400" size={32} />
             <div>
-              <p className="text-gray-500">Total Revenue</p>
-              <h2 className="text-2xl font-bold">₹{totalSales}</h2>
+              <p className="text-[#9CA3AF]">Total Revenue</p>
+              <h2 className="text-2xl font-bold text-white">
+                ₹{totalSales}
+              </h2>
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-2xl shadow-xl flex items-center gap-4">
-            <BarChart3 className="text-purple-600" size={32} />
+          <div className="bg-[#111827] p-8 rounded-2xl shadow-xl flex items-center gap-4 border border-[#1F2937]">
+            <BarChart3 className="text-[#3B82F6]" size={32} />
             <div>
-              <p className="text-gray-500">Platform Growth</p>
-              <h2 className="text-2xl font-bold">Excellent</h2>
+              <p className="text-[#9CA3AF]">Platform Growth</p>
+              <h2 className="text-2xl font-bold text-white">
+                Excellent
+              </h2>
             </div>
           </div>
         </div>
 
         {/* ================= LIST ================= */}
-        <div className="bg-white p-10 rounded-3xl shadow-2xl">
+        <div className="bg-[#111827] p-10 rounded-3xl shadow-2xl border border-[#1F2937]">
 
           {/* ===== VENDORS ===== */}
           {view === "vendors" && (
             <>
-              <h2 className="text-2xl font-bold mb-6">Registered Vendors</h2>
+              <h2 className="text-2xl font-bold mb-6 text-white">
+                Registered Vendors
+              </h2>
 
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b text-gray-500">
+                  <tr className="border-b border-[#1F2937] text-[#9CA3AF]">
                     <th className="pb-3">Name</th>
                     <th className="pb-3">Email</th>
                     <th className="pb-3">Service</th>
@@ -132,18 +144,24 @@ export default function AdminDash() {
 
                 <tbody>
                   {vendors.map(v => (
-                    <tr key={v.id} className="border-b last:border-0">
-                      <td className="py-3 font-semibold">{v.name}</td>
-                      <td className="py-3">{v.email}</td>
-                      <td className="py-3">{v.service_type || "-"}</td>
+                    <tr key={v.id} className="border-b border-[#1F2937] last:border-0">
+                      <td className="py-3 font-semibold text-white">
+                        {v.name}
+                      </td>
+                      <td className="py-3 text-[#9CA3AF]">
+                        {v.email}
+                      </td>
+                      <td className="py-3 text-[#9CA3AF]">
+                        {v.service_type || "-"}
+                      </td>
 
                       <td className="py-3">
                         {v.approved ? (
-                          <span className="text-green-600 font-semibold">
+                          <span className="text-emerald-400 font-semibold">
                             Approved
                           </span>
                         ) : (
-                          <span className="text-red-500 font-semibold">
+                          <span className="text-red-400 font-semibold">
                             Pending
                           </span>
                         )}
@@ -153,7 +171,7 @@ export default function AdminDash() {
                         {!v.approved && (
                           <button
                             onClick={() => approveVendor(v.id)}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:scale-105 transition"
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:scale-105 transition"
                           >
                             <CheckCircle size={18} />
                             Approve
@@ -170,11 +188,13 @@ export default function AdminDash() {
           {/* ===== USERS ===== */}
           {view === "users" && (
             <>
-              <h2 className="text-2xl font-bold mb-6">Registered Users</h2>
+              <h2 className="text-2xl font-bold mb-6 text-white">
+                Registered Users
+              </h2>
 
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b text-gray-500">
+                  <tr className="border-b border-[#1F2937] text-[#9CA3AF]">
                     <th className="pb-3">Name</th>
                     <th className="pb-3">Email</th>
                   </tr>
@@ -182,9 +202,13 @@ export default function AdminDash() {
 
                 <tbody>
                   {users.map((u, i) => (
-                    <tr key={i} className="border-b last:border-0">
-                      <td className="py-3 font-semibold">{u.name}</td>
-                      <td className="py-3">{u.email}</td>
+                    <tr key={i} className="border-b border-[#1F2937] last:border-0">
+                      <td className="py-3 font-semibold text-white">
+                        {u.name}
+                      </td>
+                      <td className="py-3 text-[#9CA3AF]">
+                        {u.email}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

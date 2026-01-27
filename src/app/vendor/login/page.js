@@ -21,35 +21,32 @@ export default function VendorLogin() {
     }
 
     try {
-      // 🔥 AuthContext handles backend + storage
       await loginVendor({
         email: f.email,
         password: f.password,
       })
 
-      // ✅ LOGIN SUCCESS → DASHBOARD
       router.push("/vendor/dashboard")
     } catch (err) {
-      // safety (normally error already handled in context)
       console.error(err)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100">
-      <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-[#0B1120] px-4">
+      <div className="bg-[#0F172A] p-10 rounded-3xl shadow-2xl w-full max-w-md border border-[#1F2937]">
 
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+          <div className="w-16 h-16 rounded-full bg-cyan-900/40 flex items-center justify-center text-cyan-400 shadow-inner">
             <Briefcase size={32} />
           </div>
         </div>
 
-        <h2 className="text-3xl font-extrabold text-center mb-2">
+        <h2 className="text-3xl font-extrabold text-center mb-2 text-white">
           Vendor Portal
         </h2>
 
-        <p className="text-center text-gray-500 mb-8">
+        <p className="text-center text-gray-400 mb-8">
           Login to manage your business & bookings
         </p>
 
@@ -82,7 +79,7 @@ export default function VendorLogin() {
           Login to Dashboard
         </button>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-gray-500 mt-6">
           © {new Date().getFullYear()} EventZaa Vendor Panel
         </p>
       </div>

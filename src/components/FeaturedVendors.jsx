@@ -16,18 +16,18 @@ export default function FeaturedVendors() {
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
-      className="py-24 bg-white text-center"
+      className="py-24 bg-[#0B1120] text-center"
     >
       <motion.h2
         initial={{ y: 30, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="text-4xl font-extrabold mb-4"
+        className="text-4xl font-extrabold mb-4 text-white"
       >
         Featured Vendors
       </motion.h2>
 
-      <p className="text-gray-600 mb-14 max-w-2xl mx-auto">
+      <p className="text-[#9CA3AF] mb-14 max-w-2xl mx-auto">
         Handpicked professionals trusted for weddings, corporate events and celebrations.
       </p>
 
@@ -50,7 +50,7 @@ export default function FeaturedVendors() {
             }}
             whileHover={{ y: -10 }}
             transition={{ duration: 0.4 }}
-            className="group bg-white rounded-2xl shadow-lg overflow-hidden"
+            className="group bg-[#111827] rounded-2xl shadow-lg overflow-hidden border border-[#1F2937]"
           >
             <div className="relative h-48 overflow-hidden">
               <Image
@@ -59,18 +59,23 @@ export default function FeaturedVendors() {
                 alt={v.name}
                 className="object-cover transition duration-500 group-hover:scale-110"
               />
-              <span className="absolute top-3 left-3 bg-pink-600 text-white text-xs px-3 py-1 rounded-full">
+              <span className="absolute top-3 left-3 bg-[#2563EB] text-white text-xs px-3 py-1 rounded-full">
                 {v.service}
               </span>
             </div>
 
-            <div className="p-6">
-              <h3 className="font-bold text-lg mb-1">{v.name}</h3>
-              <p className="text-sm text-gray-500 mb-4">⭐ {v.rating} Rating</p>
+            <div className="p-6 text-left">
+              <h3 className="font-bold text-lg mb-1 text-white">
+                {v.name}
+              </h3>
+
+              <p className="text-sm text-[#9CA3AF] mb-4">
+                ⭐ {v.rating} Rating
+              </p>
 
               <Link
                 href={`/vendors/${v.slug}`}
-                className="block mt-3 w-full text-center py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:scale-105 transition"
+                className="block mt-3 w-full text-center py-2 rounded-lg bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white font-semibold hover:scale-105 transition"
               >
                 View Details
               </Link>
@@ -88,7 +93,7 @@ export default function FeaturedVendors() {
       >
         <Link
           href="/vendors"
-          className="inline-block px-8 py-3 rounded-xl border border-pink-500 text-pink-600 font-semibold hover:bg-pink-50 transition"
+          className="inline-block px-8 py-3 rounded-xl border border-[#2563EB] text-[#3B82F6] font-semibold hover:bg-[#0F172A] transition"
         >
           View All Vendors
         </Link>
