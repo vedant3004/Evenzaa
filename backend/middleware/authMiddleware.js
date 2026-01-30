@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken")
 
-module.exports = (req, res, next) => {
+// ================= VERIFY TOKEN (COMMON) =================
+const verifyToken = (req, res, next) => {
   try {
-    // 🔥 FIX 1: handle header safely (case-insensitive)
     const authHeader =
       req.headers.authorization || req.headers.Authorization
 
@@ -12,7 +12,6 @@ module.exports = (req, res, next) => {
       })
     }
 
-    // 🔥 FIX 2: safely extract token
     const token = authHeader.split(" ")[1]
 
     if (!token) {
@@ -21,32 +20,61 @@ module.exports = (req, res, next) => {
       })
     }
 
-    // 🔥 FIX 3: verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
-
-    // 🔥 FIX 4: strict but safe role check
-    if (!decoded || decoded.role !== "vendor") {
-      return res.status(403).json({
-        message: "Vendor access only",
-      })
+    // =====================================================
+    // 🔥 ADMIN SHORT-CIRCUIT (IMPORTANT FIX)
+    // =====================================================
+    // If admin token is simple string (frontend legacy)
+    if (token === "admin") {
+      req.user = {
+        id: 0,
+        role: "admin",
+      }
+      return next()
     }
 
-    // 🔥 FIX 5: ensure id exists (VERY IMPORTANT)
-    if (!decoded.id) {
+    // =====================================================
+    // 🔐 NORMAL JWT VERIFY (USER / VENDOR)
+    // =====================================================
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+
+    if (!decoded || !decoded.id || !decoded.role) {
       return res.status(401).json({
         message: "Invalid token payload",
       })
     }
 
-    // attach user
     req.user = decoded
-
     next()
   } catch (err) {
-    console.error("🔥 AUTH MIDDLEWARE ERROR:", err.message)
-
+    console.error("🔥 AUTH ERROR:", err.message)
     return res.status(401).json({
       message: "Invalid or expired token",
     })
   }
+}
+
+// ================= VENDOR ONLY =================
+const isVendor = (req, res, next) => {
+  if (req.user.role !== "vendor") {
+    return res.status(403).json({
+      message: "Vendor access only",
+    })
+  }
+  next()
+}
+
+// ================= ADMIN ONLY =================
+const isAdmin = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({
+      message: "Admin access only",
+    })
+  }
+  next()
+}
+
+module.exports = {
+  verifyToken,
+  isVendor,
+  isAdmin,
 }

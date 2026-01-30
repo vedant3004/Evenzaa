@@ -27,7 +27,7 @@ exports.registerVendor = async (req, res) => {
       password: hash,
       service_type,
       price,
-      approved: true, // ✅ DEV MODE AUTO APPROVE
+      approved: true, // vendor auto approved
     })
 
     res.status(201).json({
@@ -84,9 +84,7 @@ exports.getVendors = async (req, res) => {
 // ================= APPROVE VENDOR (ADMIN) =================
 exports.approveVendor = async (req, res) => {
   try {
-    const { id } = req.params
-
-    const vendor = await Vendor.findByPk(id)
+    const vendor = await Vendor.findByPk(req.params.id)
     if (!vendor) {
       return res.status(404).json({ message: "Vendor not found" })
     }
@@ -94,7 +92,7 @@ exports.approveVendor = async (req, res) => {
     vendor.approved = true
     await vendor.save()
 
-    res.json({ message: "Vendor approved successfully" })
+    res.json({ success: true, vendor })
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: "Server error" })
@@ -113,9 +111,7 @@ exports.updateVendorProfile = async (req, res) => {
 
     if (name) vendor.name = name
     if (email) vendor.email = email
-    if (password) {
-      vendor.password = await bcrypt.hash(password, 10)
-    }
+    if (password) vendor.password = await bcrypt.hash(password, 10)
 
     await vendor.save()
 
@@ -127,10 +123,10 @@ exports.updateVendorProfile = async (req, res) => {
 }
 
 // ==========================================================
-// 🔥 BUSINESS LISTING (MAIN FEATURE)
+// 🔥 BUSINESS LISTING (ADMIN APPROVAL ENABLED)
 // ==========================================================
 
-// ================= SAVE / UPDATE BUSINESS =================
+// ================= SAVE BUSINESS =================
 exports.saveVendorBusiness = async (req, res) => {
   try {
     const vendorId = req.user.id
@@ -151,58 +147,112 @@ exports.saveVendorBusiness = async (req, res) => {
       })
     }
 
-    const slug = slugify(business, { lower: true, strict: true })
+    const baseSlug = slugify(business, { lower: true, strict: true })
+    let slug = baseSlug
+    let count = 1
 
-    let record = await VendorBusiness.findOne({
-      where: { vendor_id: vendorId },
-    })
-
-    if (record) {
-      await record.update({
-        business_name: business,
-        slug,
-        service_type,
-        price,
-        city,
-        phone,
-        image,
-        services,
-        description,
-        approved: true, // ✅ DEV MODE AUTO APPROVE
-      })
-    } else {
-      record = await VendorBusiness.create({
-        vendor_id: vendorId,
-        business_name: business,
-        slug,
-        service_type,
-        price,
-        city,
-        phone,
-        image,
-        services,
-        description,
-        approved: true, // ✅ DEV MODE AUTO APPROVE
-      })
+    while (await VendorBusiness.findOne({ where: { slug } })) {
+      slug = `${baseSlug}-${count++}`
     }
+
+    const record = await VendorBusiness.create({
+      vendor_id: vendorId,
+      business_name: business,
+      slug,
+      service_type,
+      price,
+      city,
+      phone,
+      image,
+      services,
+      description,
+      approved: false,
+      status: "pending",
+    })
 
     res.json({
       success: true,
-      message: "✅ Business saved & LIVE on vendors page",
+      message: "Business saved. Pending admin approval.",
       business: record,
     })
   } catch (err) {
-    console.error("🔥 SAVE BUSINESS ERROR:", err)
+    console.error("SAVE BUSINESS ERROR:", err)
     res.status(500).json({ message: "Server error while saving business" })
   }
 }
 
-// ================= PUBLIC: GET ALL BUSINESSES =================
+// ================= ADMIN: GET PENDING BUSINESSES =================
+exports.getPendingBusinesses = async (req, res) => {
+  try {
+    const list = await VendorBusiness.findAll({
+      where: {
+        approved: false,
+        status: "pending", // 🔥 CRITICAL FIX
+      },
+      include: [{ model: Vendor, attributes: ["id", "name", "email"] }],
+      order: [["createdAt", "DESC"]],
+    })
+
+    res.json(list)
+  } catch (err) {
+    console.error("GET PENDING ERROR:", err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// ================= ADMIN: APPROVE BUSINESS =================
+exports.approveBusiness = async (req, res) => {
+  try {
+    const business = await VendorBusiness.findByPk(req.params.id)
+    if (!business) {
+      return res.status(404).json({ message: "Business not found" })
+    }
+
+    business.approved = true
+    business.status = "approved"
+    await business.save()
+
+    res.json({
+      success: true,
+      message: "Business approved successfully",
+      business, // 🔥 RETURN UPDATED
+    })
+  } catch (err) {
+    console.error("APPROVE ERROR:", err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// ================= ADMIN: REJECT BUSINESS =================
+exports.rejectBusiness = async (req, res) => {
+  try {
+    const business = await VendorBusiness.findByPk(req.params.id)
+    if (!business) {
+      return res.status(404).json({ message: "Business not found" })
+    }
+
+    business.approved = false
+    business.status = "rejected"
+    await business.save()
+
+    res.json({
+      success: true,
+      message: "Business rejected successfully",
+      business, // 🔥 RETURN UPDATED
+    })
+  } catch (err) {
+    console.error("REJECT ERROR:", err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// ================= PUBLIC: GET APPROVED BUSINESSES =================
 exports.getPublicBusinesses = async (req, res) => {
   try {
     const list = await VendorBusiness.findAll({
       where: { approved: true },
       order: [["createdAt", "DESC"]],
+      include: [{ model: Vendor, attributes: ["id", "name", "email"] }],
     })
 
     res.json(list)
@@ -216,10 +266,8 @@ exports.getPublicBusinesses = async (req, res) => {
 exports.getBusinessBySlug = async (req, res) => {
   try {
     const business = await VendorBusiness.findOne({
-      where: {
-        slug: req.params.slug,
-        approved: true,
-      },
+      where: { slug: req.params.slug, approved: true },
+      include: [{ model: Vendor, attributes: ["id", "name", "email"] }],
     })
 
     if (!business) {

@@ -13,5 +13,7 @@ export const saveVendor = (vendor) => {
 }
 
 export const findVendor = (username, password) => {
-  return getVendors().find(v => v.username === username && v.password === password)
+  return getVendors().find(
+    v => v.username === username && v.password === password
+  )
 }

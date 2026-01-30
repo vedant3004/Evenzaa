@@ -23,13 +23,15 @@ export function AuthProvider({ children }) {
     const v = localStorage.getItem("evenzaa_vendor")
     const a = localStorage.getItem("evenzaa_admin")
 
-    if (a) {
+    // 🔥 ADMIN SESSION (JWT BASED)
+    if (a && a.split(".").length === 3) {
       setUser({
         role: "admin",
         username: "Admin",
         displayName: "Admin",
       })
-    } 
+    }
+    // 🔥 VENDOR SESSION
     else if (v) {
       const vendor = JSON.parse(v)
       setUser({
@@ -37,7 +39,8 @@ export function AuthProvider({ children }) {
         role: "vendor",
         displayName: vendor.name || vendor.business || "Vendor",
       })
-    } 
+    }
+    // 🔥 USER SESSION
     else if (u) {
       const usr = JSON.parse(u)
       setUser({
@@ -82,7 +85,7 @@ export function AuthProvider({ children }) {
       }
 
       localStorage.setItem("eventzaa_user", JSON.stringify(u))
-      localStorage.setItem("evenzaa_token", json.token) // ✅ SINGLE TOKEN
+      localStorage.setItem("evenzaa_token", json.token)
 
       localStorage.removeItem("evenzaa_vendor")
       localStorage.removeItem("evenzaa_admin")
@@ -127,11 +130,11 @@ export function AuthProvider({ children }) {
       const v = {
         ...json.vendor,
         role: "vendor",
-        displayName: json.vendor.name || json.vendor.business || "Vendor",
+        displayName: json.vendor.name || "Vendor",
       }
 
       localStorage.setItem("evenzaa_vendor", JSON.stringify(v))
-      localStorage.setItem("evenzaa_token", json.token) // ✅ FIXED & CONSISTENT
+      localStorage.setItem("evenzaa_token", json.token)
 
       localStorage.removeItem("eventzaa_user")
       localStorage.removeItem("evenzaa_admin")
@@ -143,10 +146,16 @@ export function AuthProvider({ children }) {
     }
   }
 
-  /* ================= ADMIN LOGIN ================= */
-  const loginAdmin = () => {
-    localStorage.setItem("evenzaa_admin", "true")
-    localStorage.setItem("evenzaa_token", "admin")
+  /* ================= ADMIN LOGIN (JWT SAFE) ================= */
+  const loginAdmin = ({ token }) => {
+    if (!token || token.split(".").length !== 3) {
+      console.error("Invalid admin JWT")
+      return
+    }
+
+    // 🔥 STORE REAL JWT ONLY
+    localStorage.setItem("evenzaa_admin", token)
+    localStorage.setItem("evenzaa_token", token)
 
     localStorage.removeItem("eventzaa_user")
     localStorage.removeItem("evenzaa_vendor")

@@ -1,25 +1,59 @@
 const express = require("express")
 const router = express.Router()
 
-const authMiddleware = require("../middleware/authMiddleware")
+// 🔥 FIX: destructure middleware functions
+const {
+  verifyToken,
+  isVendor,
+} = require("../middleware/authMiddleware")
+
 const vendorController = require("../controllers/vendorController")
 
 // ================= AUTH =================
-router.post("/register", vendorController.registerVendor)
-router.post("/login", vendorController.loginVendor)
+
+// Vendor Register
+router.post(
+  "/register",
+  vendorController.registerVendor
+)
+
+// Vendor Login
+router.post(
+  "/login",
+  vendorController.loginVendor
+)
 
 // ================= ADMIN =================
-router.get("/", vendorController.getVendors)
-router.put("/approve/:id", vendorController.approveVendor)
+
+// Get all vendors (admin)
+router.get(
+  "/",
+  vendorController.getVendors
+)
+
+// Approve vendor (admin)
+router.put(
+  "/approve/:id",
+  vendorController.approveVendor
+)
 
 // =================================================
 // 🔒 VENDOR DASHBOARD (AUTH REQUIRED)
 // =================================================
 
-// 🔥 SAVE / UPDATE BUSINESS LISTING
+// ✅ UPDATE VENDOR PROFILE
+router.put(
+  "/profile",
+  verifyToken,
+  isVendor,
+  vendorController.updateVendorProfile
+)
+
+// 🔥 SAVE BUSINESS (MULTIPLE BUSINESSES SUPPORTED)
 router.put(
   "/business",
-  authMiddleware,
+  verifyToken,
+  isVendor,
   vendorController.saveVendorBusiness
 )
 

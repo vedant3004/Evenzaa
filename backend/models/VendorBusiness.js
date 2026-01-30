@@ -45,9 +45,15 @@ const VendorBusiness = sequelize.define(
 
     description: DataTypes.TEXT,
 
+    // 🔥 ADMIN APPROVAL SYSTEM
     approved: {
       type: DataTypes.BOOLEAN,
-      defaultValue: true, // 🔥 DEV MODE → AUTO APPROVE
+      defaultValue: false, // ❌ DEV MODE OFF → ADMIN APPROVAL REQUIRED
+    },
+
+    status: {
+      type: DataTypes.ENUM("pending", "approved", "rejected"),
+      defaultValue: "pending",
     },
   },
   {

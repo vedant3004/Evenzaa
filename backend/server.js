@@ -9,22 +9,21 @@ const sequelize = require("./db")
 // ================= MODELS =================
 const User = require("./models/User")
 const Vendor = require("./models/Vendor")
-const VendorBusiness = require("./models/VendorBusiness") // ✅ REQUIRED
+const VendorBusiness = require("./models/VendorBusiness")
 const Booking = require("./models/Booking")
 const Payment = require("./models/Payment")
 
 // ================= ROUTES =================
 const authRoutes = require("./routes/auth")
 const vendorRoutes = require("./routes/vendor")
+const bookingRoutes = require("./routes/booking") // ✅ MUST export router
+const adminRoutes = require("./routes/admin")     // 🔥 ADD THIS
 
 const app = express()
 
-// ================= SECURITY MIDDLEWARE =================
-
-// 🔐 Security headers
+// ================= SECURITY =================
 app.use(helmet())
 
-// 🔒 Rate limiting (anti brute force)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
@@ -33,18 +32,14 @@ const limiter = rateLimit({
 })
 app.use(limiter)
 
-// ================= CORE MIDDLEWARE =================
+// ================= CORE =================
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      // "https://eventzaa.com" // production
-    ],
+    origin: ["http://localhost:3000"],
     credentials: true,
   })
 )
 
-// JSON body limit
 app.use(express.json({ limit: "10mb" }))
 
 // ================= DATABASE RELATIONS =================
@@ -70,8 +65,8 @@ Booking.hasOne(Payment, {
 })
 Payment.belongsTo(Booking, { foreignKey: "booking_id" })
 
-// 🔥 Vendor → VendorBusiness (CRITICAL)
-Vendor.hasOne(VendorBusiness, {
+// 🔥 Vendor → VendorBusiness (MULTIPLE)
+Vendor.hasMany(VendorBusiness, {
   foreignKey: "vendor_id",
   onDelete: "CASCADE",
 })
@@ -82,8 +77,16 @@ VendorBusiness.belongsTo(Vendor, {
 // ================= ROUTES =================
 app.use("/api/auth", authRoutes)
 app.use("/api/vendor", vendorRoutes)
+app.use("/api/admin", adminRoutes) // 🔥🔥 THIS WAS MISSING
 
-// ================= HEALTH CHECK =================
+// 🔥🔥 SAFETY CHECK (IMPORTANT)
+if (typeof bookingRoutes !== "function") {
+  console.error("❌ bookingRoutes is NOT a router. Check routes/booking.js")
+} else {
+  app.use("/api/bookings", bookingRoutes)
+}
+
+// ================= HEALTH =================
 app.get("/health", (req, res) => {
   res.json({
     status: "OK",
@@ -97,28 +100,22 @@ app.get("/", (req, res) => {
   res.send("EventZaa Backend Running 🚀")
 })
 
-// ================= GLOBAL ERROR HANDLER =================
+// ================= GLOBAL ERROR =================
 app.use((err, req, res, next) => {
   console.error("🔥 GLOBAL SERVER ERROR:", err)
-  res.status(500).json({
-    message: "Internal Server Error",
-  })
+  res.status(500).json({ message: "Internal Server Error" })
 })
 
-// ================= DB SYNC =================
+// ================= DB =================
 sequelize
   .sync({
-    alter: true, // ⚠️ dev only, prod → migrations
-    logging: console.log, // 🔥 SHOW SQL ERRORS (IMPORTANT)
+    alter: true,
+    logging: console.log,
   })
-  .then(() => {
-    console.log("✅ MySQL Connected & Tables Synced")
-  })
-  .catch((err) => {
-    console.error("❌ DB SYNC ERROR:", err)
-  })
+  .then(() => console.log("✅ MySQL Connected & Tables Synced"))
+  .catch((err) => console.error("❌ DB SYNC ERROR:", err))
 
-// ================= START SERVER =================
+// ================= START =================
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`)

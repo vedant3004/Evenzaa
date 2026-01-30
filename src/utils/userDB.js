@@ -1,7 +1,15 @@
-export const getUsers = () =>
-  JSON.parse(localStorage.getItem("eventzaa_users") || "[]")
+const safeGet = (key) => {
+  if (typeof window === "undefined") return []
+  return JSON.parse(localStorage.getItem(key) || "[]")
+}
+
+export const getUsers = () => {
+  return safeGet("eventzaa_users")
+}
 
 export const saveUser = (user) => {
+  if (typeof window === "undefined") return false
+
   const users = getUsers()
 
   // duplicate email block (NO CRASH)
@@ -22,5 +30,7 @@ export const saveUser = (user) => {
 }
 
 export const findUser = (email, password) => {
-  return getUsers().find(u => u.email === email && u.password === password)
+  return getUsers().find(
+    u => u.email === email && u.password === password
+  )
 }
