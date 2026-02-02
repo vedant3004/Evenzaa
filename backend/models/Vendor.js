@@ -44,7 +44,6 @@ const Vendor = sequelize.define(
     },
 
     services: {
-      // ["Birthday Decoration", "Wedding Setup", ...]
       type: DataTypes.JSON,
       allowNull: true,
     },
@@ -55,30 +54,49 @@ const Vendor = sequelize.define(
     },
 
     image: {
-      // banner / cover image
       type: DataTypes.STRING,
       allowNull: true,
     },
 
     rating: {
       type: DataTypes.FLOAT,
-      defaultValue: 4.5, // ⭐ default trust rating
+      defaultValue: 4.5,
     },
 
     // ================= ADMIN CONTROL =================
     approved: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false, // ❌ admin approve karega
+      defaultValue: false,
     },
 
-    // ================= ROLE (FUTURE SAFE) =================
+    status: {
+      type: DataTypes.ENUM("pending", "approved", "rejected"),
+      defaultValue: "pending",
+    },
+
+    // ================= ROLE =================
     role: {
       type: DataTypes.STRING,
       defaultValue: "vendor",
     },
+
+    // ================= ADDED (SAFE – FUTURE USE) =================
+
+    // 🔹 Total bookings count (optional dashboard stat)
+    total_bookings: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+
+    // 🔹 Total earnings snapshot (safe, optional)
+    total_earnings: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
   },
   {
-    timestamps: true, // createdAt, updatedAt
+    tableName: "Vendors",
+    timestamps: true,
   }
 )
 

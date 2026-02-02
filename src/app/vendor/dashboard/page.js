@@ -5,6 +5,9 @@ import { BarChart3, Wallet, Crown, X, LogOut, Store, UserCog } from "lucide-reac
 import { useRouter } from "next/navigation"
 import { useAuth } from "../../../context/AuthContext"
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+
 export default function VendorDash() {
   const router = useRouter()
   const { user, logout } = useAuth()
@@ -61,38 +64,36 @@ export default function VendorDash() {
     }
 
     const token = localStorage.getItem("evenzaa_token")
-
     if (!token) {
       alert("Session expired. Please login again.")
       logoutVendor()
       return
     }
 
+    const payload = {
+      business: businessForm.business,
+      service_type: businessForm.service_type,
+      price: Number(businessForm.price || 0),
+      city: businessForm.city,
+      phone: businessForm.phone,
+      image: businessForm.image,
+      services: businessForm.services
+        ? businessForm.services.split(",").map(s => s.trim())
+        : [],
+      description: businessForm.description,
+    }
+
     try {
       setSaving(true)
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/business`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            business: businessForm.business,
-            service_type: businessForm.service_type,
-            price: Number(businessForm.price || 0),
-            city: businessForm.city,
-            phone: businessForm.phone,
-            image: businessForm.image,
-            services: businessForm.services
-              ? businessForm.services.split(",").map(s => s.trim())
-              : [],
-            description: businessForm.description,
-          }),
-        }
-      )
+      const res = await fetch(`${API_BASE}/api/vendor/business`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      })
 
       const data = await res.json()
 
@@ -123,17 +124,16 @@ export default function VendorDash() {
     <div className="pt-32 min-h-screen bg-[#0B1120] px-4">
       <div className="max-w-6xl mx-auto">
 
-        {/* HEADER */}
         <div className="flex justify-between mb-8">
           <h1 className="text-4xl font-extrabold text-white">
             Welcome, {vendor.name}
           </h1>
-          <button
+          {/* <button
             onClick={logoutVendor}
             className="flex gap-2 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
           >
             <LogOut size={18} /> Logout
-          </button>
+          </button> */}
         </div>
 
         {successMsg && (
@@ -142,14 +142,12 @@ export default function VendorDash() {
           </div>
         )}
 
-        {/* STATS */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           <Stat icon={<Wallet className="text-cyan-400" />} label="Total Sales" value={`₹${vendor.sales || 0}`} />
           <Stat icon={<Crown className="text-yellow-400" />} label="Membership" value={vendor.plan || "Standard"} />
           <Stat icon={<BarChart3 className="text-purple-400" />} label="Performance" value="Excellent" />
         </div>
 
-        {/* ACTION CARDS */}
         <div className="grid md:grid-cols-3 gap-8">
           <ActionCard
             icon={<Store className="text-cyan-400" />}
@@ -213,7 +211,7 @@ export default function VendorDash() {
   )
 }
 
-/* ================= COMPONENTS ================= */
+/* ================= EXTRA COMPONENTS ================= */
 
 const Stat = ({ icon, label, value }) => (
   <div className="bg-[#111827] border border-[#1F2937] p-6 rounded-xl shadow flex gap-4 items-center">
@@ -243,16 +241,12 @@ const Modal = ({ title, children, onClose, footer }) => (
     <div className="bg-[#0F172A] w-full max-w-xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col border border-[#1F2937]">
       <div className="flex justify-between items-center px-6 py-4 border-b border-[#1F2937]">
         <h2 className="text-xl font-bold text-white">{title}</h2>
-        <button onClick={onClose} className="text-gray-400 hover:text-white"><X /></button>
+        <button onClick={onClose} className="text-gray-400 hover:text-white">
+          <X />
+        </button>
       </div>
-
-      <div className="px-6 py-4 overflow-y-auto space-y-4">
-        {children}
-      </div>
-
-      <div className="px-6 py-4 border-t border-[#1F2937] bg-[#0F172A]">
-        {footer}
-      </div>
+      <div className="px-6 py-4 overflow-y-auto space-y-4">{children}</div>
+      <div className="px-6 py-4 border-t border-[#1F2937]">{footer}</div>
     </div>
   </div>
 )

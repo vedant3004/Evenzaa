@@ -4,6 +4,8 @@ const slugify = require("slugify")
 
 const Vendor = require("../models/Vendor")
 const VendorBusiness = require("../models/VendorBusiness")
+const Booking = require("../models/Booking")
+const User = require("../models/User")
 
 // ================= REGISTER VENDOR =================
 exports.registerVendor = async (req, res) => {
@@ -27,15 +29,17 @@ exports.registerVendor = async (req, res) => {
       password: hash,
       service_type,
       price,
-      approved: true, // vendor auto approved
+      approved: false,
+      status: "pending",
     })
 
     res.status(201).json({
-      message: "Vendor registered successfully",
+      success: true,
+      message: "Vendor registered. Pending admin approval.",
       vendor,
     })
   } catch (err) {
-    console.error(err)
+    console.error("VENDOR REGISTER ERROR:", err)
     res.status(500).json({ message: "Server error" })
   }
 }
@@ -47,12 +51,18 @@ exports.loginVendor = async (req, res) => {
 
     const vendor = await Vendor.findOne({ where: { email } })
     if (!vendor) {
-      return res.status(400).json({ message: "Invalid email" })
+      return res.status(400).json({ message: "Invalid email or password" })
+    }
+
+    if (vendor.status !== "approved" || vendor.approved !== true) {
+      return res.status(403).json({
+        message: `Vendor account ${vendor.status}. Contact admin.`,
+      })
     }
 
     const match = await bcrypt.compare(password, vendor.password)
     if (!match) {
-      return res.status(400).json({ message: "Invalid password" })
+      return res.status(400).json({ message: "Invalid email or password" })
     }
 
     const token = jwt.sign(
@@ -61,9 +71,13 @@ exports.loginVendor = async (req, res) => {
       { expiresIn: "7d" }
     )
 
-    res.json({ token, vendor })
+    res.json({
+      success: true,
+      token,
+      vendor,
+    })
   } catch (err) {
-    console.error(err)
+    console.error("VENDOR LOGIN ERROR:", err)
     res.status(500).json({ message: "Server error" })
   }
 }
@@ -90,11 +104,39 @@ exports.approveVendor = async (req, res) => {
     }
 
     vendor.approved = true
+    vendor.status = "approved"
     await vendor.save()
 
-    res.json({ success: true, vendor })
+    res.json({
+      success: true,
+      message: "Vendor approved successfully",
+      vendor,
+    })
   } catch (err) {
-    console.error(err)
+    console.error("APPROVE VENDOR ERROR:", err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// ================= REJECT VENDOR (ADMIN) =================
+exports.rejectVendor = async (req, res) => {
+  try {
+    const vendor = await Vendor.findByPk(req.params.id)
+    if (!vendor) {
+      return res.status(404).json({ message: "Vendor not found" })
+    }
+
+    vendor.approved = false
+    vendor.status = "rejected"
+    await vendor.save()
+
+    res.json({
+      success: true,
+      message: "Vendor rejected successfully",
+      vendor,
+    })
+  } catch (err) {
+    console.error("REJECT VENDOR ERROR:", err)
     res.status(500).json({ message: "Server error" })
   }
 }
@@ -123,7 +165,35 @@ exports.updateVendorProfile = async (req, res) => {
 }
 
 // ==========================================================
-// 🔥 BUSINESS LISTING (ADMIN APPROVAL ENABLED)
+// 🆕 GET BOOKINGS FOR LOGGED-IN VENDOR (🔥 MAIN FIX)
+// ==========================================================
+exports.getVendorBookings = async (req, res) => {
+  try {
+    const vendorId = req.user.id
+
+    const bookings = await Booking.findAll({
+      where: { vendor_id: vendorId },
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: User,
+          attributes: ["id", "name", "email"],
+        },
+      ],
+    })
+
+    res.json({
+      success: true,
+      bookings,
+    })
+  } catch (err) {
+    console.error("GET VENDOR BOOKINGS ERROR:", err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// ==========================================================
+// 🔥 BUSINESS LISTING (UNCHANGED)
 // ==========================================================
 
 // ================= SAVE BUSINESS =================
@@ -187,7 +257,7 @@ exports.getPendingBusinesses = async (req, res) => {
     const list = await VendorBusiness.findAll({
       where: {
         approved: false,
-        status: "pending", // 🔥 CRITICAL FIX
+        status: "pending",
       },
       include: [{ model: Vendor, attributes: ["id", "name", "email"] }],
       order: [["createdAt", "DESC"]],
@@ -215,7 +285,7 @@ exports.approveBusiness = async (req, res) => {
     res.json({
       success: true,
       message: "Business approved successfully",
-      business, // 🔥 RETURN UPDATED
+      business,
     })
   } catch (err) {
     console.error("APPROVE ERROR:", err)
@@ -238,7 +308,7 @@ exports.rejectBusiness = async (req, res) => {
     res.json({
       success: true,
       message: "Business rejected successfully",
-      business, // 🔥 RETURN UPDATED
+      business,
     })
   } catch (err) {
     console.error("REJECT ERROR:", err)

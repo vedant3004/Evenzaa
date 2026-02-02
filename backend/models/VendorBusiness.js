@@ -48,15 +48,36 @@ const VendorBusiness = sequelize.define(
     // 🔥 ADMIN APPROVAL SYSTEM
     approved: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false, // ❌ DEV MODE OFF → ADMIN APPROVAL REQUIRED
+      defaultValue: false,
     },
 
     status: {
       type: DataTypes.ENUM("pending", "approved", "rejected"),
       defaultValue: "pending",
     },
+
+    // ================= ADDED (SAFE – FOR BOOKINGS) =================
+
+    // 🔹 Total bookings on this business
+    total_bookings: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+
+    // 🔹 Total earnings from this business
+    total_earnings: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+
+    // 🔹 Last booking date (optional analytics)
+    last_booking_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
+    tableName: "VendorBusinesses",
     timestamps: true,
   }
 )

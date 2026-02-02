@@ -3,46 +3,65 @@
 import { useEffect, useState } from "react"
 import { MapPin, CheckCircle, XCircle } from "lucide-react"
 
+const BOOKING_API = "http://localhost:5000/api/bookings"
+
 export default function VendorBookings() {
   const [vendor, setVendor] = useState(null)
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // ================= FETCH BOOKINGS FROM BACKEND =================
   useEffect(() => {
-    const v = localStorage.getItem("evenzaa_vendor")
-    if (!v) {
-      setLoading(false)
-      return
+    const fetchBookings = async () => {
+      try {
+        const stored = localStorage.getItem("evenzaa_vendor")
+
+        if (!stored) {
+          setLoading(false)
+          return
+        }
+
+        const vendorData = JSON.parse(stored)
+        setVendor(vendorData)
+
+        // ✅ CORRECT API (MATCHES BACKEND)
+        const res = await fetch(`${BOOKING_API}/vendor`, {
+          headers: {
+            Authorization: `Bearer ${vendorData.token}`,
+          },
+        })
+
+        const data = await res.json()
+        setBookings(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error("❌ Vendor booking fetch error:", err)
+        setBookings([])
+      } finally {
+        setLoading(false)
+      }
     }
 
-    const vendorData = JSON.parse(v)
-    setVendor(vendorData)
-
-    const all = JSON.parse(localStorage.getItem("bookings") || "[]")
-
-    const filtered = all.filter(
-      (b) => b.vendorId === vendorData.id
-    )
-
-    setBookings(filtered)
-    setLoading(false)
+    fetchBookings()
   }, [])
 
-  const updateStatus = (id, status) => {
-    const all = JSON.parse(localStorage.getItem("bookings") || "[]")
-
-    const updated = all.map((b) =>
-      b.id === id ? { ...b, status } : b
-    )
-
-    localStorage.setItem("bookings", JSON.stringify(updated))
-
-    setBookings(updated.filter(b => b.vendorId === vendor.id))
+  // ================= UPDATE BOOKING STATUS (UI ONLY) =================
+  const updateStatus = async (id, status) => {
+    try {
+      // 🔥 UI READY – BACKEND API CAN BE ATTACHED LATER
+      setBookings(prev =>
+        prev.map(b =>
+          b.id === id ? { ...b, status } : b
+        )
+      )
+    } catch (err) {
+      console.error("❌ Status update error:", err)
+    }
   }
 
+  // ================= TOTAL EARNINGS =================
   const totalEarnings = bookings
-    .filter(b => b.status === "Confirmed")
-    .reduce((sum, b) => sum + Number(b.price), 0)
+    .filter(b => b.status === "paid")
+    .reduce((sum, b) => sum + Number(b.amount || 0), 0)
 
   if (loading) {
     return (
@@ -69,7 +88,7 @@ export default function VendorBookings() {
           My Bookings
         </h1>
         <p className="text-gray-400">
-          Manage customer bookings and update status
+          Manage customer bookings and view details
         </p>
 
         <p className="mt-3 text-lg font-semibold text-cyan-400">
@@ -100,23 +119,21 @@ export default function VendorBookings() {
             <div className="flex flex-col md:flex-row md:justify-between gap-4">
               <div>
                 <h3 className="font-bold text-xl text-white">
-                  {b.vendorName}
+                  Booking #{b.id}
                 </h3>
                 <p className="text-gray-400">
-                  {b.service}
+                  Date: {b.date} | Time: {b.time || "—"}
                 </p>
               </div>
 
               <div className="flex items-center gap-4">
                 <span className="font-bold text-cyan-400 text-lg">
-                  ₹{b.price}
+                  ₹{b.amount || 0}
                 </span>
 
                 <span
                   className={`px-3 py-1 text-sm rounded-full font-semibold ${
-                    b.status === "Cancelled"
-                      ? "bg-red-900/40 text-red-400 border border-red-700"
-                      : b.status === "Confirmed"
+                    b.status === "paid"
                       ? "bg-emerald-900/40 text-emerald-400 border border-emerald-700"
                       : "bg-yellow-900/40 text-yellow-400 border border-yellow-700"
                   }`}
@@ -126,36 +143,37 @@ export default function VendorBookings() {
               </div>
             </div>
 
-            {/* CUSTOMER */}
+            {/* CUSTOMER DETAILS (🔥 FIXED) */}
             <div className="flex gap-3 text-sm text-gray-400">
               <MapPin size={18} />
               <div>
                 <p className="font-medium text-gray-200">
-                  {b.address?.name} ({b.address?.phone})
+                  {b.customer_name || "Customer"}
+                  {b.customer_phone && ` (${b.customer_phone})`}
                 </p>
                 <p>
-                  {b.address?.address}, {b.address?.city}
+                  {b.customer_address || "Address not provided"}
                 </p>
               </div>
             </div>
 
             {/* ACTIONS */}
-            {b.status === "Pending" && (
+            {b.status === "pending" && (
               <div className="flex gap-4 pt-2">
                 <button
-                  onClick={() => updateStatus(b.id, "Confirmed")}
+                  onClick={() => updateStatus(b.id, "paid")}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition"
                 >
                   <CheckCircle size={18} />
-                  Accept
+                  Mark Paid
                 </button>
 
                 <button
-                  onClick={() => updateStatus(b.id, "Cancelled")}
+                  onClick={() => updateStatus(b.id, "cancelled")}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition"
                 >
                   <XCircle size={18} />
-                  Reject
+                  Cancel
                 </button>
               </div>
             )}

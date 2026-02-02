@@ -4,6 +4,7 @@ const sequelize = require("../db")
 const User = sequelize.define(
   "User",
   {
+    // ================= BASIC =================
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -27,6 +28,17 @@ const User = sequelize.define(
     role: {
       type: DataTypes.ENUM("user", "vendor", "admin"),
       defaultValue: "user",
+    },
+
+    // ================= 🔥 ADDED (DO NOT REMOVE) =================
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    address: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
   },
   {

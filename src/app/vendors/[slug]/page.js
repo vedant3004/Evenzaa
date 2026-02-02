@@ -7,6 +7,9 @@ import { useAuth } from "../../../context/AuthContext"
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+
 export default function VendorDetailPage() {
   const { slug } = useParams()
   const router = useRouter()
@@ -18,14 +21,15 @@ export default function VendorDetailPage() {
   useEffect(() => {
     const fetchVendor = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/businesses/${slug}`,
-          { cache: "no-store" }
-        )
+        const url = `${API_BASE}/api/vendor/businesses/${slug}`
+        console.log("🔗 Fetch vendor detail:", url)
 
+        const res = await fetch(url, { cache: "no-store" })
         const data = await res.json()
 
-        if (!res.ok) {
+        console.log("📥 Vendor API response:", data)
+
+        if (!res.ok || !data) {
           setVendor(null)
           return
         }
@@ -37,19 +41,20 @@ export default function VendorDetailPage() {
           description: data.description,
           price: data.price,
           image: data.image || "/placeholder.jpg",
-          rating: 4.8,
-          services: data.services || [],
+          rating: data.rating || 4.8,
+          services: Array.isArray(data.services) ? data.services : [],
           phone: data.phone,
           slug: data.slug,
         })
       } catch (err) {
+        console.error("❌ Vendor fetch failed:", err)
         setVendor(null)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchVendor()
+    if (slug) fetchVendor()
   }, [slug])
 
   if (loading) {

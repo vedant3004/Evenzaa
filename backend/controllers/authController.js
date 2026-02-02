@@ -95,3 +95,19 @@ exports.login = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" })
   }
 }
+
+// ================= 👑 ADMIN: GET ALL USERS =================
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      where: { role: "user" }, // 🔥 ONLY USERS
+      attributes: ["id", "name", "email", "role", "createdAt"],
+      order: [["createdAt", "DESC"]],
+    })
+
+    return res.json(users)
+  } catch (error) {
+    console.error("GET USERS ERROR:", error)
+    return res.status(500).json({ message: "Failed to fetch users" })
+  }
+}

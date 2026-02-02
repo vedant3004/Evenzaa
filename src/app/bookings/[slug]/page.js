@@ -6,6 +6,9 @@ import vendors from "../../../data/vendors" // 🔁 fallback only
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+
 export default function BookingPage() {
   const params = useParams()
   const slug = decodeURIComponent(params.slug)
@@ -28,13 +31,15 @@ export default function BookingPage() {
   useEffect(() => {
     const fetchVendor = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/businesses/${slug}`,
-          { cache: "no-store" }
-        )
+        const url = `${API_BASE}/api/vendor/businesses/${slug}`
+        console.log("🔗 Fetch booking vendor:", url)
+
+        const res = await fetch(url, { cache: "no-store" })
 
         if (res.ok) {
           const data = await res.json()
+          console.log("📥 Booking vendor response:", data)
+
           setVendor({
             id: data.id,
             slug: data.slug,
@@ -45,21 +50,20 @@ export default function BookingPage() {
             location: data.city,
           })
         } else {
-          // 🔁 FALLBACK (OLD STATIC DATA)
+          // 🔁 FALLBACK (STATIC)
           const localVendor = vendors.find(v => v.slug === slug)
           setVendor(localVendor || null)
         }
       } catch (err) {
-        console.error("DB vendor fetch failed", err)
+        console.error("❌ DB vendor fetch failed:", err)
         const localVendor = vendors.find(v => v.slug === slug)
         setVendor(localVendor || null)
       } finally {
-        // ✅ CRITICAL FIX
         setLoading(false)
       }
     }
 
-    fetchVendor()
+    if (slug) fetchVendor()
   }, [slug])
 
   // ================= LOAD SAVED ADDRESS =================

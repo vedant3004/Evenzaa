@@ -1,10 +1,11 @@
 const express = require("express")
 const router = express.Router()
 
-// 🔥 FIX: destructure middleware functions
+// 🔥 Middleware
 const {
   verifyToken,
   isVendor,
+  isAdmin, // ✅ ADD
 } = require("../middleware/authMiddleware")
 
 const vendorController = require("../controllers/vendorController")
@@ -25,16 +26,28 @@ router.post(
 
 // ================= ADMIN =================
 
-// Get all vendors (admin)
+// Get all vendors (ADMIN)
 router.get(
   "/",
+  verifyToken,
+  isAdmin,
   vendorController.getVendors
 )
 
-// Approve vendor (admin)
+// ✅ APPROVE VENDOR (ADMIN)
 router.put(
   "/approve/:id",
+  verifyToken,
+  isAdmin,
   vendorController.approveVendor
+)
+
+// ❌ REJECT VENDOR (ADMIN)
+router.put(
+  "/reject/:id",
+  verifyToken,
+  isAdmin,
+  vendorController.rejectVendor
 )
 
 // =================================================
@@ -55,6 +68,19 @@ router.put(
   verifyToken,
   isVendor,
   vendorController.saveVendorBusiness
+)
+
+// =================================================
+// 🆕 🔥 VENDOR BOOKINGS (NEW – DO NOT REMOVE)
+// =================================================
+
+// ✅ GET BOOKINGS FOR LOGGED-IN VENDOR
+// GET /api/vendor/bookings
+router.get(
+  "/bookings",
+  verifyToken,
+  isVendor,
+  vendorController.getVendorBookings
 )
 
 // =================================================

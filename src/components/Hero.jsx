@@ -84,16 +84,30 @@ export default function Hero() {
   return (
     <section className="relative pt-24 pb-28 overflow-hidden bg-[#0B1120]">
 
+      {/* 🔳 TEXTURE BACKGROUND IMAGE */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/hero-texture.png"
+          alt="Background texture"
+          fill
+          priority
+          className="object-cover opacity-30 mix-blend-overlay"
+        />
+      </div>
+
+      {/* 🌑 GRADIENT OVERLAY */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0B1120]/80 via-[#0B1120]/60 to-[#0B1120] z-0" />
+
       {/* 🌈 FLOATING BLOBS */}
       <motion.div
         animate={{ y: [0, -40, 0], x: [0, 30, 0] }}
         transition={{ duration: 18, repeat: Infinity }}
-        className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-[#2563EB]/30 rounded-full blur-3xl"
+        className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-[#2563EB]/30 rounded-full blur-3xl z-0"
       />
       <motion.div
         animate={{ y: [0, 40, 0], x: [0, -30, 0] }}
         transition={{ duration: 22, repeat: Infinity }}
-        className="absolute bottom-0 -right-32 w-[400px] h-[400px] bg-[#3B82F6]/30 rounded-full blur-3xl"
+        className="absolute bottom-0 -right-32 w-[400px] h-[400px] bg-[#3B82F6]/30 rounded-full blur-3xl z-0"
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">

@@ -23,25 +23,20 @@ export function AuthProvider({ children }) {
     const v = localStorage.getItem("evenzaa_vendor")
     const a = localStorage.getItem("evenzaa_admin")
 
-    // 🔥 ADMIN SESSION (JWT BASED)
     if (a && a.split(".").length === 3) {
       setUser({
         role: "admin",
         username: "Admin",
         displayName: "Admin",
       })
-    }
-    // 🔥 VENDOR SESSION
-    else if (v) {
+    } else if (v) {
       const vendor = JSON.parse(v)
       setUser({
         ...vendor,
         role: "vendor",
         displayName: vendor.name || vendor.business || "Vendor",
       })
-    }
-    // 🔥 USER SESSION
-    else if (u) {
+    } else if (u) {
       const usr = JSON.parse(u)
       setUser({
         ...usr,
@@ -53,7 +48,7 @@ export function AuthProvider({ children }) {
     setLoading(false)
   }, [])
 
-  /* ================= AUTO REDIRECT ================= */
+  /* ================= AUTO REDIRECT AFTER LOGIN ================= */
   useEffect(() => {
     if (!user) return
     const redirect = localStorage.getItem("redirectAfterLogin")
@@ -62,6 +57,19 @@ export function AuthProvider({ children }) {
       router.push(redirect)
     }
   }, [user, router])
+
+  /* ================= AUTO REDIRECT ON WEBSITE REOPEN ================= */
+  useEffect(() => {
+    if (loading || !user) return
+
+    if (user.role === "admin" && !pathname.startsWith("/admin")) {
+      router.replace("/admin/dashboard")
+    }
+
+    if (user.role === "vendor" && !pathname.startsWith("/vendor")) {
+      router.replace("/vendor/dashboard")
+    }
+  }, [user, pathname, router, loading])
 
   const isVendorPage = pathname.startsWith("/vendor")
   const isAdminPage = pathname.startsWith("/admin")
@@ -146,31 +154,33 @@ export function AuthProvider({ children }) {
     }
   }
 
-  /* ================= ADMIN LOGIN (JWT SAFE) ================= */
+  /* ================= ADMIN LOGIN ================= */
   const loginAdmin = ({ token }) => {
-    if (!token || token.split(".").length !== 3) {
-      console.error("Invalid admin JWT")
-      return
-    }
+    if (!token || token.split(".").length !== 3) return
 
-    // 🔥 STORE REAL JWT ONLY
     localStorage.setItem("evenzaa_admin", token)
     localStorage.setItem("evenzaa_token", token)
 
     localStorage.removeItem("eventzaa_user")
     localStorage.removeItem("evenzaa_vendor")
 
-    setUser({
-      role: "admin",
-      displayName: "Admin",
-    })
-
+    setUser({ role: "admin", displayName: "Admin" })
     setOpen(false)
   }
 
-  /* ================= LOGOUT ================= */
+  /* ================= LOGOUT (🔥 FIXED) ================= */
   const logout = () => {
-    localStorage.clear()
+    // ❌ DO NOT clear everything
+    // localStorage.clear()
+
+    // ✅ REMOVE ONLY AUTH RELATED KEYS
+    localStorage.removeItem("eventzaa_user")
+    localStorage.removeItem("evenzaa_vendor")
+    localStorage.removeItem("evenzaa_admin")
+    localStorage.removeItem("evenzaa_token")
+
+    // ❗ bookings / cache / history remain SAFE
+
     setUser(null)
     router.push("/")
   }

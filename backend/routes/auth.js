@@ -2,6 +2,8 @@ const express = require("express")
 const router = express.Router()
 
 const authController = require("../controllers/authController")
+const authMiddleware = require("../middleware/authMiddleware")
+const User = require("../models/User")
 
 // =================================================
 // 🔐 AUTH ROUTES
@@ -17,6 +19,29 @@ router.post(
 router.post(
   "/login",
   authController.login
+)
+
+// =================================================
+// 👑 ADMIN – GET ALL USERS (✅ FIX)
+// =================================================
+router.get(
+  "/users",
+  authMiddleware.verifyToken,     // JWT required
+  authMiddleware.isAdmin,         // ADMIN only
+  async (req, res) => {
+    try {
+      const users = await User.findAll({
+        attributes: ["id", "name", "email", "role", "createdAt"],
+        where: { role: "user" },   // 🔥 ONLY USERS
+        order: [["createdAt", "DESC"]],
+      })
+
+      return res.json(users)
+    } catch (err) {
+      console.error("❌ Admin fetch users error:", err)
+      return res.status(500).json({ message: "Failed to fetch users" })
+    }
+  }
 )
 
 module.exports = router

@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation"
 
 const VENDOR_API = "http://localhost:5000/api/vendor"
 const ADMIN_API = "http://localhost:5000/api/admin"
+const AUTH_API = "http://localhost:5000/api/auth"
 
 // 🔐 JWT FORMAT CHECK
 const isValidJWT = (token) => {
@@ -27,11 +28,12 @@ export default function AdminDash() {
 
   // OLD (local utils – untouched)
   const localVendors = getVendors()
-  const users = getUsers()
+  const localUsers = getUsers() // dummy
 
   // BACKEND STATES
   const [vendors, setVendors] = useState([])
   const [businesses, setBusinesses] = useState([])
+  const [users, setUsers] = useState([])
 
   const [view, setView] = useState("vendors")
   const [admin, setAdmin] = useState(false)
@@ -41,10 +43,9 @@ export default function AdminDash() {
     0
   )
 
-  // 🔐 ADMIN GUARD (JWT SAFE)
+  // 🔐 ADMIN GUARD
   useEffect(() => {
     const token = localStorage.getItem("evenzaa_admin")
-
     if (!isValidJWT(token)) {
       localStorage.removeItem("evenzaa_admin")
       router.push("/admin/login")
@@ -53,24 +54,59 @@ export default function AdminDash() {
     }
   }, [router])
 
-  // 🔥 FETCH VENDORS
+  // ================= FETCH VENDORS =================
+  const fetchVendors = async () => {
+    try {
+      const token = localStorage.getItem("evenzaa_admin")
+      if (!isValidJWT(token)) return
+
+      const res = await fetch(VENDOR_API, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const data = await res.json()
+      setVendors(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error("❌ Vendor fetch error:", err)
+      setVendors([])
+    }
+  }
+
   useEffect(() => {
-    fetch(VENDOR_API)
-      .then(res => res.json())
-      .then(data => setVendors(Array.isArray(data) ? data : []))
-      .catch(() => setVendors([]))
+    fetchVendors()
   }, [])
 
-  // 🔥 FETCH PENDING BUSINESSES (JWT SAFE)
+  // ================= FETCH USERS =================
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem("evenzaa_admin")
+        if (!isValidJWT(token)) return
+
+        const res = await fetch(`${AUTH_API}/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        const data = await res.json()
+        setUsers(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error("❌ User fetch error:", err)
+        setUsers([])
+      }
+    }
+
+    fetchUsers()
+  }, [])
+
+  // ================= FETCH PENDING BUSINESSES =================
   const fetchBusinesses = async () => {
     try {
       const token = localStorage.getItem("evenzaa_admin")
-
-      if (!isValidJWT(token)) {
-        localStorage.removeItem("evenzaa_admin")
-        router.push("/admin/login")
-        return
-      }
+      if (!isValidJWT(token)) return router.push("/admin/login")
 
       const res = await fetch(`${ADMIN_API}/businesses/pending`, {
         headers: {
@@ -79,14 +115,7 @@ export default function AdminDash() {
       })
 
       const data = await res.json()
-
-      if (Array.isArray(data)) {
-        setBusinesses(data)
-      } else if (Array.isArray(data.data)) {
-        setBusinesses(data.data)
-      } else {
-        setBusinesses([])
-      }
+      setBusinesses(Array.isArray(data) ? data : [])
     } catch (err) {
       console.error(err)
       setBusinesses([])
@@ -97,41 +126,49 @@ export default function AdminDash() {
     if (view === "businesses") fetchBusinesses()
   }, [view])
 
-  // ✅ APPROVE BUSINESS
+  // ================= APPROVE / REJECT BUSINESS =================
   const approveBusiness = async (id) => {
+    const token = localStorage.getItem("evenzaa_admin")
+    await fetch(`${ADMIN_API}/business/${id}/approve`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    fetchBusinesses()
+  }
+
+  const rejectBusiness = async (id) => {
+    const token = localStorage.getItem("evenzaa_admin")
+    await fetch(`${ADMIN_API}/business/${id}/reject`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    fetchBusinesses()
+  }
+
+  // ================= APPROVE / REJECT VENDOR =================
+  const approveVendor = async (id) => {
     try {
       const token = localStorage.getItem("evenzaa_admin")
-      if (!isValidJWT(token)) return router.push("/admin/login")
-
-      await fetch(`${ADMIN_API}/business/${id}/approve`, {
+      await fetch(`${VENDOR_API}/approve/${id}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
-
-      fetchBusinesses()
+      fetchVendors()
     } catch {
-      alert("Approval failed")
+      alert("Vendor approval failed")
     }
   }
 
-  // ❌ REJECT BUSINESS
-  const rejectBusiness = async (id) => {
+  const rejectVendor = async (id) => {
     try {
       const token = localStorage.getItem("evenzaa_admin")
-      if (!isValidJWT(token)) return router.push("/admin/login")
-
-      await fetch(`${ADMIN_API}/business/${id}/reject`, {
+      await fetch(`${VENDOR_API}/reject/${id}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
-
-      fetchBusinesses()
+      fetchVendors()
     } catch {
-      alert("Rejection failed")
+      alert("Vendor rejection failed")
     }
   }
 
@@ -166,7 +203,88 @@ export default function AdminDash() {
         {/* ================= CONTENT ================= */}
         <div className="bg-[#111827] p-10 rounded-3xl shadow-2xl border border-[#1F2937]">
 
-          {/* ===== BUSINESS APPROVAL ===== */}
+          {/* ===== USERS ===== */}
+          {view === "users" && (
+            <>
+              <h2 className="text-2xl font-bold mb-6 text-white">
+                Registered Users
+              </h2>
+              <SimpleTable
+                headers={["Name", "Email"]}
+                rows={users.map(u => [u.name, u.email])}
+              />
+            </>
+          )}
+
+          {/* ===== VENDORS (🔥 UPDATED) ===== */}
+          {view === "vendors" && (
+            <>
+              <h2 className="text-2xl font-bold mb-6 text-white">
+                Registered Vendors
+              </h2>
+
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-[#1F2937] text-[#9CA3AF]">
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vendors.map(v => (
+                    <tr key={v.id} className="border-b border-[#1F2937]">
+                      <td className="py-3 text-white">{v.name}</td>
+                      <td className="text-white">{v.email}</td>
+                      <td className="text-white">{v.service_type || "-"}</td>
+                      <td>
+                        {v.status === "approved" && (
+                          <span className="text-green-400 font-semibold">
+                            Approved
+                          </span>
+                        )}
+                        {v.status === "rejected" && (
+                          <span className="text-red-400 font-semibold">
+                            Rejected
+                          </span>
+                        )}
+                        {v.status === "pending" && (
+                          <span className="text-yellow-400 font-semibold">
+                            Pending
+                          </span>
+                        )}
+                      </td>
+                      <td className="flex gap-3 py-2">
+                        {v.status === "pending" && (
+                          <>
+                            <button
+                              onClick={() => approveVendor(v.id)}
+                              className="px-3 py-2 bg-emerald-600 rounded-lg text-white flex gap-1"
+                            >
+                              <CheckCircle size={16} /> Approve
+                            </button>
+                            <button
+                              onClick={() => rejectVendor(v.id)}
+                              className="px-3 py-2 bg-red-600 rounded-lg text-white flex gap-1"
+                            >
+                              <XCircle size={16} /> Reject
+                            </button>
+                          </>
+                        )}
+                        {v.status !== "pending" && (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {/* ===== BUSINESS APPROVAL (UNCHANGED) ===== */}
           {view === "businesses" && (
             <>
               <h2 className="text-2xl font-bold mb-6 text-white">
@@ -189,18 +307,10 @@ export default function AdminDash() {
                   <tbody>
                     {businesses.map(b => (
                       <tr key={b.id} className="border-b border-[#1F2937]">
-                        <td className="py-3 font-semibold text-white">
-                          {b.business_name}
-                        </td>
-                        <td className="text-[#9CA3AF]">
-                          {b.Vendor?.name || "-"}
-                        </td>
-                        <td className="text-[#9CA3AF]">{b.city}</td>
-                        <td>
-                          <span className="text-yellow-400 font-semibold">
-                            Pending
-                          </span>
-                        </td>
+                        <td className="py-3 text-white">{b.business_name}</td>
+                        <td className="text-white">{b.Vendor?.name}</td>
+                        <td className="text-white">{b.city}</td>
+                        <td className="text-yellow-400 font-semibold">Pending</td>
                         <td className="flex gap-3 py-2">
                           <button
                             onClick={() => approveBusiness(b.id)}
@@ -220,37 +330,6 @@ export default function AdminDash() {
                   </tbody>
                 </table>
               )}
-            </>
-          )}
-
-          {/* ===== VENDORS ===== */}
-          {view === "vendors" && (
-            <>
-              <h2 className="text-2xl font-bold mb-6 text-white">
-                Registered Vendors
-              </h2>
-              <SimpleTable
-                headers={["Name", "Email", "Service", "Status"]}
-                rows={vendors.map(v => [
-                  v.name,
-                  v.email,
-                  v.service_type || "-",
-                  v.approved ? "Approved" : "Pending",
-                ])}
-              />
-            </>
-          )}
-
-          {/* ===== USERS ===== */}
-          {view === "users" && (
-            <>
-              <h2 className="text-2xl font-bold mb-6 text-white">
-                Registered Users
-              </h2>
-              <SimpleTable
-                headers={["Name", "Email"]}
-                rows={users.map(u => [u.name, u.email])}
-              />
             </>
           )}
         </div>

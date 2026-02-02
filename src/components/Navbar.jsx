@@ -6,13 +6,17 @@ import { useState, useEffect, useRef } from "react"
 import { useAuth } from "../context/AuthContext"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
 
 export default function Navbar() {
   const { user, logout, setOpen, loading, isVendorPage, isAdminPage } = useAuth()
+  const router = useRouter()
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const [vendorOpen, setVendorOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [mobileVendorOpen, setMobileVendorOpen] = useState(false)
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false)
   const [adminLogged, setAdminLogged] = useState(false)
 
   const vendorRef = useRef(null)
@@ -62,19 +66,16 @@ export default function Navbar() {
               className="relative z-10 object-contain"
             />
           </div>
-          <span className="text-2xl font-extrabold tracking-wide text-white">
+          <span className="text-2xl font-extrabold tracking-wide text-blue-400">
             𝓔𝓿𝓮𝓷𝓩𝓪𝓪
           </span>
         </Link>
 
-        {/* ================= DESKTOP MENU ================= */}
+        {/* ================= DESKTOP MENU (UNCHANGED) ================= */}
         <div className="hidden md:flex items-center gap-8 font-medium text-[#9CA3AF]">
 
-          <Link href="/" className="hover:text-white transition">
-            Home
-          </Link>
+          <Link href="/" className="hover:text-white transition">Home</Link>
 
-          {/* ================= VENDORS DROPDOWN ================= */}
           <div ref={vendorRef} className="relative">
             <button
               onClick={() => setVendorOpen(prev => !prev)}
@@ -85,18 +86,14 @@ export default function Navbar() {
 
             {vendorOpen && (
               <div className="absolute top-full mt-2 bg-[#111827] shadow-xl rounded-xl w-48 overflow-hidden border border-[#1F2937]">
-                <Link
-                  href="/vendor/login"
+                <Link href="/vendor/login"
                   onClick={() => setVendorOpen(false)}
-                  className="block px-4 py-3 hover:bg-[#0F172A] text-white"
-                >
+                  className="block px-4 py-3 hover:bg-[#0F172A] text-white">
                   Vendor Login
                 </Link>
-                <Link
-                  href="/vendor/register"
+                <Link href="/vendor/register"
                   onClick={() => setVendorOpen(false)}
-                  className="block px-4 py-3 hover:bg-[#0F172A] text-white"
-                >
+                  className="block px-4 py-3 hover:bg-[#0F172A] text-white">
                   Vendor Register
                 </Link>
               </div>
@@ -107,10 +104,7 @@ export default function Navbar() {
             Bookings
           </Link>
 
-          {loading && <span className="text-[#6B7280]">...</span>}
-
-          {/* ================= ADMIN / VENDOR LABEL ================= */}
-          {!loading && !user && isAdminPage && !adminLogged && (
+          {!loading && !user && isAdminPage && (
             <span className="font-semibold text-[#3B82F6]">Admin</span>
           )}
 
@@ -118,34 +112,26 @@ export default function Navbar() {
             <span className="font-semibold text-[#3B82F6]">Vendor</span>
           )}
 
-          {/* ================= LOGIN BUTTON ================= */}
           {!loading && !user && !isVendorPage && !isAdminPage && !adminLogged && (
-            <button
-              onClick={() => setOpen(true)}
-              className="btn-primary"
-            >
+            <button onClick={() => setOpen(true)} className="btn-primary">
               Login / Signup
             </button>
           )}
 
-          {/* ================= USER / ADMIN DROPDOWN ================= */}
           {!loading && (user || adminLogged) && (
             <div ref={profileRef} className="relative">
               <button
                 onClick={() => setProfileOpen(prev => !prev)}
-                className="font-semibold text-[#3B82F6] hover:text-[#60A5FA] transition"
+                className="font-semibold text-[#3B82F6]"
               >
-                {user?.displayName || user?.username || user?.name || "Admin"}
+                {user?.name || "Admin"}
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 mt-2 bg-[#111827] shadow-lg rounded-lg p-3 min-w-[140px] border border-[#1F2937]">
+                <div className="absolute right-0 mt-2 bg-[#111827] rounded-lg p-3 min-w-[160px] border border-[#1F2937]">
                   <button
-                    onClick={() => {
-                      setProfileOpen(false)
-                      logout()
-                    }}
-                    className="w-full text-left text-[#9CA3AF] hover:text-red-400 transition"
+                    onClick={logout}
+                    className="w-full text-left text-[#9CA3AF] hover:text-red-400"
                   >
                     Logout
                   </button>
@@ -163,6 +149,81 @@ export default function Navbar() {
           {mobileOpen ? <X /> : <Menu />}
         </button>
       </div>
+
+      {/* ================= MOBILE MENU (DESKTOP-LIKE) ================= */}
+      {mobileOpen && (
+        <div className="md:hidden bg-[#0B1120] border-t border-[#1F2937] px-4 py-6 space-y-4 text-[#9CA3AF]">
+
+          <Link href="/" onClick={() => setMobileOpen(false)} className="block">
+            Home
+          </Link>
+
+          {/* MOBILE VENDORS DROPDOWN */}
+          <button
+            onClick={() => setMobileVendorOpen(prev => !prev)}
+            className="flex items-center gap-1"
+          >
+            Vendors <ChevronDown size={16} />
+          </button>
+
+          {mobileVendorOpen && (
+            <div className="pl-4 space-y-2">
+              <Link href="/vendor/login"
+                onClick={() => setMobileOpen(false)}
+                className="block text-white">
+                Vendor Login
+              </Link>
+              <Link href="/vendor/register"
+                onClick={() => setMobileOpen(false)}
+                className="block text-white">
+                Vendor Register
+              </Link>
+            </div>
+          )}
+
+          <Link href="/bookings" onClick={() => setMobileOpen(false)} className="block">
+            Bookings
+          </Link>
+
+          {/* MOBILE USER / LOGIN */}
+          {!user && !adminLogged && (
+            <button
+              onClick={() => {
+                setMobileOpen(false)
+                setOpen(true)
+              }}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg"
+            >
+              Login / Signup
+            </button>
+          )}
+
+          {(user || adminLogged) && (
+            <>
+              <button
+                onClick={() => setMobileProfileOpen(prev => !prev)}
+                className="font-semibold text-[#3B82F6]"
+              >
+                {user?.name || "Admin"}
+              </button>
+
+              {mobileProfileOpen && (
+                <div className="pl-4">
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false)
+                      logout()
+                    }}
+                    className="text-red-400"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </motion.nav>
   )
 }
