@@ -25,6 +25,7 @@ export default function BookingPage() {
   })
 
   const [useSaved, setUseSaved] = useState(false)
+  const [editAddress, setEditAddress] = useState(false) // 🆕 ADDED
   const [showModal, setShowModal] = useState(false)
 
   // ================= FETCH VENDOR (DB FIRST) =================
@@ -50,7 +51,6 @@ export default function BookingPage() {
             location: data.city,
           })
         } else {
-          // 🔁 FALLBACK (STATIC)
           const localVendor = vendors.find(v => v.slug === slug)
           setVendor(localVendor || null)
         }
@@ -156,16 +156,72 @@ export default function BookingPage() {
             Delivery Address
           </h2>
 
-          {!useSaved && (
-            <div className="space-y-3">
-              <input name="name" value={form.name} onChange={handleChange} className="input" placeholder="Full Name" />
-              <input name="phone" value={form.phone} onChange={handleChange} className="input" placeholder="Phone" />
-              <input name="city" value={form.city} onChange={handleChange} className="input" placeholder="City" />
-              <textarea name="address" value={form.address} onChange={handleChange} className="input" placeholder="Address" />
+          {/* 🆕 SHOW SAVED ADDRESS */}
+          {useSaved && !editAddress && (
+            <div className="mb-4 text-gray-300">
+              <p className="font-semibold text-white">
+                {form.name} ({form.phone})
+              </p>
+              <p className="text-gray-400">
+                {form.address}, {form.city}
+              </p>
+
+              <button
+                onClick={() => setEditAddress(true)}
+                className="mt-3 text-blue-400 font-semibold"
+              >
+                ✏️ Edit Address
+              </button>
             </div>
           )}
 
-          <button onClick={openConfirmation} className="btn-primary w-full mt-6">
+          {/* EXISTING FORM (REUSED FOR EDIT ALSO) */}
+          {(!useSaved || editAddress) && (
+            <div className="space-y-3">
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                className="input"
+                placeholder="Full Name"
+              />
+              <input
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                className="input"
+                placeholder="Phone"
+              />
+              <input
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+                className="input"
+                placeholder="City"
+              />
+              <textarea
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+                className="input"
+                placeholder="Address"
+              />
+
+              {useSaved && editAddress && (
+                <button
+                  onClick={() => setEditAddress(false)}
+                  className="text-sm text-gray-400"
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
+          )}
+
+          <button
+            onClick={openConfirmation}
+            className="btn-primary w-full mt-6"
+          >
             Proceed to Payment
           </button>
         </div>
@@ -176,15 +232,27 @@ export default function BookingPage() {
         {showModal && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
             <div className="bg-[#111827] p-6 rounded-xl max-w-md w-full border border-[#1F2937]">
-              <h3 className="text-xl font-bold mb-3 text-white">Confirm Address</h3>
-              <p className="text-white">{form.name} • {form.phone}</p>
-              <p className="text-gray-400">{form.address}, {form.city}</p>
+              <h3 className="text-xl font-bold mb-3 text-white">
+                Confirm Address
+              </h3>
+              <p className="text-white">
+                {form.name} • {form.phone}
+              </p>
+              <p className="text-gray-400">
+                {form.address}, {form.city}
+              </p>
 
               <div className="flex gap-4 mt-6">
-                <button onClick={confirmBooking} className="btn-primary flex-1">
+                <button
+                  onClick={confirmBooking}
+                  className="btn-primary flex-1"
+                >
                   Continue
                 </button>
-                <button onClick={() => setShowModal(false)} className="border flex-1 rounded-lg text-gray-400">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="border flex-1 rounded-lg text-gray-400"
+                >
                   Cancel
                 </button>
               </div>
