@@ -97,6 +97,35 @@ const Vendor = sequelize.define(
   {
     tableName: "Vendors",
     timestamps: true,
+
+    // =================================================
+    // ============ ADMIN DELETE SAFETY (🆕) ============
+    // =================================================
+
+    hooks: {
+      beforeDestroy: async (vendor, options) => {
+        try {
+          console.log(
+            "🗑️ Admin deleting vendor safely:",
+            vendor.id,
+            vendor.email
+          )
+
+          // 🔒 Future-proof:
+          // Yahan future me add kar sakte ho:
+          // - delete vendor businesses
+          // - delete vendor products
+          // - delete vendor bookings
+
+          // Example (future):
+          // await Business.destroy({ where: { vendorId: vendor.id } })
+
+        } catch (err) {
+          console.error("❌ Vendor beforeDestroy hook error:", err)
+          throw err
+        }
+      },
+    },
   }
 )
 

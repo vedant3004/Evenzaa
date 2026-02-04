@@ -9,6 +9,7 @@ import {
   CheckCircle,
   XCircle,
   Briefcase,
+  Trash2, // 🆕 ADDED
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -172,6 +173,33 @@ export default function AdminDash() {
     }
   }
 
+  // ================= DELETE VENDOR (🆕 ONLY ADDITION) =================
+  const deleteVendor = async (id) => {
+    const confirmDelete = confirm(
+      "Are you sure you want to permanently delete this vendor?"
+    )
+    if (!confirmDelete) return
+
+    try {
+      const token = localStorage.getItem("evenzaa_admin")
+
+      const res = await fetch(`${ADMIN_API}/vendor/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!res.ok) throw new Error("Delete failed")
+
+      // UI se turant remove
+      setVendors((prev) => prev.filter((v) => v.id !== id))
+    } catch (err) {
+      alert("❌ Vendor delete failed")
+      console.error(err)
+    }
+  }
+
   if (!admin) {
     return (
       <div className="pt-32 text-center text-[#9CA3AF]">
@@ -216,7 +244,7 @@ export default function AdminDash() {
             </>
           )}
 
-          {/* ===== VENDORS (🔥 UPDATED) ===== */}
+          {/* ===== VENDORS ===== */}
           {view === "vendors" && (
             <>
               <h2 className="text-2xl font-bold mb-6 text-white">
@@ -273,9 +301,14 @@ export default function AdminDash() {
                             </button>
                           </>
                         )}
-                        {v.status !== "pending" && (
-                          <span className="text-gray-400">—</span>
-                        )}
+
+                        {/* 🆕 DELETE BUTTON (ADDED, NOTHING REMOVED) */}
+                        <button
+                          onClick={() => deleteVendor(v.id)}
+                          className="px-3 py-2 bg-gray-800 hover:bg-red-700 rounded-lg text-white flex gap-1"
+                        >
+                          <Trash2 size={16} /> Delete
+                        </button>
                       </td>
                     </tr>
                   ))}

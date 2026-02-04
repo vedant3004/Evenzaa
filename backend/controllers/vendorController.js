@@ -6,6 +6,7 @@ const Vendor = require("../models/Vendor")
 const VendorBusiness = require("../models/VendorBusiness")
 const Booking = require("../models/Booking")
 const User = require("../models/User")
+const sequelize = require("../db") // 🆕 ADDED
 
 // ================= REGISTER VENDOR =================
 exports.registerVendor = async (req, res) => {
@@ -165,6 +166,50 @@ exports.updateVendorProfile = async (req, res) => {
 }
 
 // ==========================================================
+// 🆕 ADMIN: HARD DELETE VENDOR (SAFE + CASCADE)
+// ==========================================================
+exports.adminDeleteVendor = async (req, res) => {
+  const t = await sequelize.transaction()
+  try {
+    const { id } = req.params
+
+    const vendor = await Vendor.findByPk(id, { transaction: t })
+    if (!vendor) {
+      await t.rollback()
+      return res.status(404).json({ message: "Vendor not found" })
+    }
+
+    console.log("🗑️ Admin deleting vendor:", vendor.id, vendor.email)
+
+    // 🔥 Delete vendor businesses
+    await VendorBusiness.destroy({
+      where: { vendor_id: vendor.id },
+      transaction: t,
+    })
+
+    // 🔥 Delete vendor bookings
+    await Booking.destroy({
+      where: { vendor_id: vendor.id },
+      transaction: t,
+    })
+
+    // 🔥 Delete vendor itself
+    await vendor.destroy({ transaction: t })
+
+    await t.commit()
+
+    res.json({
+      success: true,
+      message: "Vendor and all related data deleted successfully",
+    })
+  } catch (err) {
+    await t.rollback()
+    console.error("ADMIN DELETE VENDOR ERROR:", err)
+    res.status(500).json({ message: "Vendor delete failed" })
+  }
+}
+
+// ==========================================================
 // 🆕 GET BOOKINGS FOR LOGGED-IN VENDOR (🔥 MAIN FIX)
 // ==========================================================
 exports.getVendorBookings = async (req, res) => {
@@ -191,10 +236,6 @@ exports.getVendorBookings = async (req, res) => {
     res.status(500).json({ message: "Server error" })
   }
 }
-
-// ==========================================================
-// 🔥 BUSINESS LISTING (UNCHANGED)
-// ==========================================================
 
 // ================= SAVE BUSINESS =================
 exports.saveVendorBusiness = async (req, res) => {

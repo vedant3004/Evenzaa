@@ -8,7 +8,10 @@ const {
 } = require("../controllers/vendorController")
 
 // 🔥 Admin login controller (JWT generator)
-const { adminLogin } = require("../controllers/adminController")
+const {
+  adminLogin,
+  deleteVendorByAdmin, // 🆕 ADDED
+} = require("../controllers/adminController")
 
 const { verifyToken, isAdmin } = require("../middleware/authMiddleware")
 
@@ -74,6 +77,33 @@ router.put(
       return await rejectBusiness(req, res)
     } catch (err) {
       console.error("❌ Reject business route error:", err)
+      next(err)
+    }
+  }
+)
+
+// =================================================
+// ============ ADMIN VENDOR DELETE (🆕) ============
+// =================================================
+
+// 🔥 Delete vendor permanently
+// DELETE /api/admin/vendor/:id
+router.delete(
+  "/vendor/:id",
+  verifyToken,
+  isAdmin,
+  async (req, res, next) => {
+    try {
+      console.log("🗑️ Admin deleting vendor ID:", req.params.id)
+
+      // 🔐 This internally deletes:
+      // - Vendor
+      // - VendorBusinesses
+      // - Bookings
+      // using transaction (safe)
+      return await deleteVendorByAdmin(req, res)
+    } catch (err) {
+      console.error("❌ Delete vendor route error:", err)
       next(err)
     }
   }

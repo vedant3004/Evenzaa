@@ -79,6 +79,35 @@ const VendorBusiness = sequelize.define(
   {
     tableName: "VendorBusinesses",
     timestamps: true,
+
+    // =================================================
+    // ============ ADMIN DELETE SAFETY (🆕) ============
+    // =================================================
+    hooks: {
+      beforeDestroy: async (business, options) => {
+        try {
+          console.log(
+            "🗑️ Deleting VendorBusiness safely:",
+            business.id,
+            "Vendor:",
+            business.vendor_id
+          )
+
+          // 🔒 Future-proof:
+          // yahan future me add kar sakte ho:
+          // - bookings cleanup
+          // - payments cleanup
+          // - analytics cleanup
+
+        } catch (err) {
+          console.error(
+            "❌ VendorBusiness beforeDestroy hook error:",
+            err
+          )
+          throw err
+        }
+      },
+    },
   }
 )
 

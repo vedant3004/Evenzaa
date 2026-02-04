@@ -99,4 +99,11 @@ router.get(
   vendorController.getBusinessBySlug
 )
 
+// =================================================
+// 🆕 ADMIN HARD DELETE (SAFE PLACEHOLDER)
+// =================================================
+
+// ❌ Vendor delete handled ONLY via /api/admin/vendor/:id
+// (intentionally not exposing delete here for safety)
+
 module.exports = router

@@ -41,50 +41,41 @@ exports.createBooking = async (req, res) => {
       amount,
     } = req.body
 
-    const userId = req.user?.id   // 🔥 FROM JWT (USER LOGIN REQUIRED)
+    const userId = req.user?.id // 🔥 FROM JWT
 
     if (!vendor_business_id || !event_date || !userId) {
       return res.status(400).json({ message: "All fields required" })
     }
 
-    // 🔍 Fetch vendor business
     const business = await VendorBusiness.findByPk(vendor_business_id)
     if (!business) {
       return res.status(404).json({ message: "Business not found" })
     }
 
-    // 🔍 Fetch vendor (owner of business)
     const vendor = await Vendor.findByPk(business.vendor_id)
     if (!vendor) {
       return res.status(404).json({ message: "Vendor not found" })
     }
 
-    // 🔍 Fetch user details
     const user = await User.findByPk(userId)
 
-    // ✅ CREATE BOOKING (FULL LINKING)
     const booking = await Booking.create({
-      user_id: userId,                 // 🔥 USER
-      vendor_id: vendor.id,             // 🔥 VENDOR
+      user_id: userId,
+      vendor_id: vendor.id,
+      vendor_business_id,
       date: event_date,
       time,
       amount,
       status: "pending",
+      customer_name: user?.name || null,
+      customer_phone: user?.phone || null,
+      customer_address: user?.address || null,
     })
 
     res.status(201).json({
       success: true,
       message: "✅ Booking placed successfully",
       booking,
-      user: {
-        name: user?.name,
-        phone: user?.phone,
-        address: user?.address,
-      },
-      vendor: {
-        name: vendor.name,
-        email: vendor.email,
-      },
     })
   } catch (err) {
     console.error("❌ BOOKING CREATE ERROR:", err)
@@ -112,6 +103,44 @@ exports.getVendorBookings = async (req, res) => {
     res.json(bookings)
   } catch (err) {
     console.error("❌ VENDOR BOOKINGS ERROR:", err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// =======================================================
+// 🔥 UPDATE BOOKING STATUS (NEW - SAFE ADD)
+// PUT /api/bookings/:id/status
+// =======================================================
+exports.updateBookingStatus = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+
+    if (!["pending", "paid", "cancelled"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" })
+    }
+
+    const booking = await Booking.findByPk(id)
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" })
+    }
+
+    // 🔐 Vendor can update only their booking
+    if (booking.vendor_id !== req.user.id) {
+      return res.status(403).json({ message: "Unauthorized" })
+    }
+
+    booking.status = status
+    await booking.save()
+
+    res.json({
+      success: true,
+      message: "Booking status updated",
+      booking,
+    })
+  } catch (err) {
+    console.error("❌ UPDATE BOOKING STATUS ERROR:", err)
     res.status(500).json({ message: "Server error" })
   }
 }

@@ -52,6 +52,33 @@ const Booking = sequelize.define(
   {
     tableName: "Bookings",
     timestamps: true,
+
+    // =================================================
+    // ============ DELETE SAFETY (🆕) =================
+    // =================================================
+    hooks: {
+      beforeDestroy: async (booking, options) => {
+        try {
+          console.log(
+            "🗑️ Deleting booking safely:",
+            booking.id,
+            "Vendor:",
+            booking.vendor_id,
+            "User:",
+            booking.user_id
+          )
+
+          // 🔒 Future scope:
+          // - refund logs
+          // - payment rollback
+          // - analytics cleanup
+
+        } catch (err) {
+          console.error("❌ Booking beforeDestroy hook error:", err)
+          throw err
+        }
+      },
+    },
   }
 )
 

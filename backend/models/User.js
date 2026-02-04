@@ -44,6 +44,21 @@ const User = sequelize.define(
   {
     tableName: "users",
     timestamps: true,
+
+    // =================================================
+    // ============ DELETE SAFETY (🆕) =================
+    // =================================================
+    hooks: {
+      beforeDestroy: async (user, options) => {
+        try {
+          console.log("🗑️ Deleting user safely:", user.id, user.email)
+          // future: bookings cleanup, logs, analytics
+        } catch (err) {
+          console.error("❌ User beforeDestroy hook error:", err)
+          throw err
+        }
+      },
+    },
   }
 )
 

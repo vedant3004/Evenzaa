@@ -15,8 +15,9 @@ export default function VendorBookings() {
     const fetchBookings = async () => {
       try {
         const stored = localStorage.getItem("evenzaa_vendor")
+        const token = localStorage.getItem("evenzaa_token") // 🔥 FIX
 
-        if (!stored) {
+        if (!stored || !token) {
           setLoading(false)
           return
         }
@@ -24,10 +25,9 @@ export default function VendorBookings() {
         const vendorData = JSON.parse(stored)
         setVendor(vendorData)
 
-        // ✅ CORRECT API (MATCHES BACKEND)
         const res = await fetch(`${BOOKING_API}/vendor`, {
           headers: {
-            Authorization: `Bearer ${vendorData.token}`,
+            Authorization: `Bearer ${token}`, // 🔥 FIXED
           },
         })
 
@@ -44,10 +44,25 @@ export default function VendorBookings() {
     fetchBookings()
   }, [])
 
-  // ================= UPDATE BOOKING STATUS (UI ONLY) =================
+  // ================= UPDATE BOOKING STATUS (🔥 BACKEND CONNECTED) =================
   const updateStatus = async (id, status) => {
     try {
-      // 🔥 UI READY – BACKEND API CAN BE ATTACHED LATER
+      const token = localStorage.getItem("evenzaa_token") // 🔥 FIX
+      if (!token) return
+
+      const res = await fetch(`${BOOKING_API}/${id}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // 🔥 FIXED
+        },
+        body: JSON.stringify({ status }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message)
+
+      // ✅ UPDATE UI AFTER DB UPDATE
       setBookings(prev =>
         prev.map(b =>
           b.id === id ? { ...b, status } : b
@@ -55,6 +70,7 @@ export default function VendorBookings() {
       )
     } catch (err) {
       console.error("❌ Status update error:", err)
+      alert("Failed to update booking status")
     }
   }
 
@@ -143,7 +159,7 @@ export default function VendorBookings() {
               </div>
             </div>
 
-            {/* CUSTOMER DETAILS (🔥 FIXED) */}
+            {/* CUSTOMER DETAILS */}
             <div className="flex gap-3 text-sm text-gray-400">
               <MapPin size={18} />
               <div>

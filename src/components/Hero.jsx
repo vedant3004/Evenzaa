@@ -19,6 +19,91 @@ export default function Hero() {
   const wrapperRef = useRef(null)
 
   /* ===============================
+     🔥 LIVE INTERACTIVE BACKGROUND
+  ================================ */
+  const canvasRef = useRef(null)
+  const mouse = useRef({ x: 0, y: 0 })
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext("2d")
+
+    const resize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resize()
+    window.addEventListener("resize", resize)
+
+    const move = (e) => {
+      mouse.current.x = e.clientX
+      mouse.current.y = e.clientY
+    }
+
+    const touchMove = (e) => {
+      mouse.current.x = e.touches[0].clientX
+      mouse.current.y = e.touches[0].clientY
+    }
+
+    window.addEventListener("mousemove", move)
+    window.addEventListener("touchmove", touchMove)
+
+    let t = 0
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // base dark
+      ctx.fillStyle = "#0B1120"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // flowing blue waves (image-like)
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath()
+        ctx.strokeStyle = `rgba(56,189,248,${0.08 - i * 0.02})`
+        ctx.lineWidth = 180 - i * 45
+        ctx.moveTo(0, canvas.height / 2)
+
+        for (let x = 0; x < canvas.width; x += 40) {
+          const y =
+            canvas.height / 2 +
+            Math.sin(x * 0.004 + t + i) * 120
+          ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+      }
+
+      // glow follows mouse
+      const glow = ctx.createRadialGradient(
+        mouse.current.x,
+        mouse.current.y,
+        0,
+        mouse.current.x,
+        mouse.current.y,
+        260
+      )
+
+      glow.addColorStop(0, "rgba(56,189,248,0.35)")
+      glow.addColorStop(0.5, "rgba(37,99,235,0.18)")
+      glow.addColorStop(1, "rgba(11,17,32,0)")
+
+      ctx.fillStyle = glow
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      t += 0.01
+      requestAnimationFrame(animate)
+    }
+
+    animate()
+
+    return () => {
+      window.removeEventListener("resize", resize)
+      window.removeEventListener("mousemove", move)
+      window.removeEventListener("touchmove", touchMove)
+    }
+  }, [])
+
+  /* ===============================
      GET USER LOCATION
   ================================ */
   useEffect(() => {
@@ -60,10 +145,8 @@ export default function Hero() {
   const handleSearch = () => {
     let url = "/vendors"
     const q = []
-
     if (search) q.push(`q=${encodeURIComponent(search)}`)
     if (location) q.push(`loc=${encodeURIComponent(location)}`)
-
     if (q.length) url += "?" + q.join("&")
     router.push(url)
   }
@@ -84,7 +167,13 @@ export default function Hero() {
   return (
     <section className="relative pt-24 pb-28 overflow-hidden bg-[#0B1120]">
 
-      {/* 🔳 TEXTURE BACKGROUND IMAGE */}
+      {/* 🌌 LIVE CANVAS BACKGROUND */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 z-0"
+      />
+
+      {/* 🔳 ORIGINAL TEXTURE IMAGE (unchanged) */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/hero-texture.png"
@@ -110,6 +199,7 @@ export default function Hero() {
         className="absolute bottom-0 -right-32 w-[400px] h-[400px] bg-[#3B82F6]/30 rounded-full blur-3xl z-0"
       />
 
+      {/* ================= CONTENT ================= */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">
 
         {/* 📝 HEADING */}
@@ -136,7 +226,7 @@ export default function Hero() {
           Discover trusted vendors, compare services, and book unforgettable experiences.
         </motion.p>
 
-        {/* 🔥 SEARCH CARD */}
+        {/* 🔥 SEARCH CARD (100% SAME AS BEFORE) */}
         <motion.div
           initial={{ opacity: 0, y: 60, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -145,6 +235,7 @@ export default function Hero() {
             focus ? "scale-105 ring-4 ring-[#2563EB]/40" : ""
           }`}
         >
+          {/* 👇 YAHI TUMHARA SEARCH BOX HAI – SAFE */}
           <div className="grid md:grid-cols-3 gap-4">
 
             {/* SEARCH */}
@@ -225,7 +316,7 @@ export default function Hero() {
               )}
             </div>
 
-            {/* SEARCH BTN */}
+            {/* SEARCH BUTTON */}
             <motion.button
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.95 }}

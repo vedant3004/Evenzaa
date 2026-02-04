@@ -1,5 +1,8 @@
 const jwt = require("jsonwebtoken")
 
+// 🆕 Vendor model import (ADD ONLY)
+const Vendor = require("../models/Vendor")
+
 // 🔥 ADMIN CREDENTIALS FROM ENV (frontend ke same)
 const ADMIN = {
   username: process.env.ADMIN_USERNAME,
@@ -33,6 +36,50 @@ exports.adminLogin = (req, res) => {
     console.error("ADMIN LOGIN ERROR:", err)
     res.status(500).json({
       message: "Server error during admin login",
+    })
+  }
+}
+
+// =================================================
+// ============ DELETE VENDOR (🆕) =================
+// =================================================
+
+exports.deleteVendorByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    // safety check
+    if (!id) {
+      return res.status(400).json({
+        message: "Vendor ID required",
+      })
+    }
+
+    const vendor = await Vendor.findByPk
+      ? await Vendor.findByPk(id)     // Sequelize (MySQL)
+      : await Vendor.findById(id)     // Mongoose (Mongo)
+
+    if (!vendor) {
+      return res.status(404).json({
+        message: "Vendor not found",
+      })
+    }
+
+    // delete vendor
+    if (vendor.destroy) {
+      await vendor.destroy()          // Sequelize
+    } else {
+      await vendor.deleteOne()        // Mongoose
+    }
+
+    return res.json({
+      success: true,
+      message: "Vendor deleted successfully",
+    })
+  } catch (err) {
+    console.error("❌ DELETE VENDOR ERROR:", err)
+    res.status(500).json({
+      message: "Failed to delete vendor",
     })
   }
 }
