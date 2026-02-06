@@ -13,6 +13,40 @@ const categories = [
   { name: "Sports", image: "/categories/sports.jpg" },
 ]
 
+// 🎨 CATEGORY COLOR THEMES (NEW – ADDED)
+const categoryColors = {
+  Weddings: {
+    primary: "#FB7185",
+    secondary: "#F43F5E",
+    glow: "rgba(251,113,133,0.45)",
+  },
+  Corporate: {
+    primary: "#2563EB",
+    secondary: "#3B82F6",
+    glow: "rgba(37,99,235,0.55)",
+  },
+  Birthday: {
+    primary: "#A855F7",
+    secondary: "#D946EF",
+    glow: "rgba(168,85,247,0.55)",
+  },
+  Concerts: {
+    primary: "#22D3EE",
+    secondary: "#06B6D4",
+    glow: "rgba(34,211,238,0.6)",
+  },
+  Conferences: {
+    primary: "#6366F1",
+    secondary: "#818CF8",
+    glow: "rgba(99,102,241,0.55)",
+  },
+  Sports: {
+    primary: "#22C55E",
+    secondary: "#4ADE80",
+    glow: "rgba(34,197,94,0.55)",
+  },
+}
+
 // container animation
 const container = {
   hidden: { opacity: 0 },
@@ -59,45 +93,69 @@ export default function Categories() {
         viewport={{ once: true }}
         className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4"
       >
-        {categories.map((c) => (
-          <motion.div key={c.name} variants={item}>
-            <Link href={`/categories/${c.name}`}>
+        {categories.map((c) => {
+          const colors = categoryColors[c.name]
 
-              <div
-                className="relative rounded-2xl shadow-xl cursor-pointer overflow-hidden
-                           hover:shadow-[0_25px_80px_-20px_rgba(37,99,235,0.55)]
-                           transition-all duration-500 group"
-              >
-                {/* 🔥 BACKGROUND IMAGE */}
+          return (
+            <motion.div key={c.name} variants={item}>
+              <Link href={`/categories/${c.name}`}>
+
                 <div
-                  className="absolute inset-0 bg-cover bg-center scale-110 group-hover:scale-100 transition-transform duration-700"
-                  style={{ backgroundImage: `url(${c.image})` }}
-                />
+                  className="relative rounded-2xl shadow-xl cursor-pointer overflow-hidden
+                             transition-all duration-500 group"
+                  style={{
+                    boxShadow: `0 25px 80px -20px ${colors.glow}`,
+                  }}
+                >
+                  {/* 🔥 BACKGROUND IMAGE */}
+                  <div
+                    className="absolute inset-0 bg-cover bg-center scale-110 group-hover:scale-100 transition-transform duration-700"
+                    style={{ backgroundImage: `url(${c.image})` }}
+                  />
 
-                {/* 🔥 DARK GRADIENT OVERLAY */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#020617]/80 via-[#020617]/40 to-transparent" />
+                  {/* 🔥 DARK GRADIENT OVERLAY */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#020617]/80 via-[#020617]/40 to-transparent" />
 
-                {/* glowing orb */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#2563EB]/40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition" />
+                  {/* 🌈 CATEGORY COLORED GLOW ORB */}
+                  <div
+                    className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition duration-500"
+                    style={{ backgroundColor: colors.primary }}
+                  />
 
-                {/* content */}
-                <div className="relative z-10 p-10 text-left">
-                  <h3 className="font-extrabold text-xl mb-2 text-white group-hover:text-[#3B82F6] transition">
-                    {c.name}
-                  </h3>
+                  {/* CONTENT */}
+                  <div className="relative z-10 p-10 text-left">
+                    <h3
+                      className="font-extrabold text-xl mb-2 transition"
+                      style={{ color: "white" }}
+                    >
+                      <span
+                        className="group-hover:text-transparent bg-clip-text bg-gradient-to-r transition"
+                        style={{
+                          backgroundImage: `linear-gradient(to right, ${colors.primary}, ${colors.secondary})`,
+                        }}
+                      >
+                        {c.name}
+                      </span>
+                    </h3>
 
-                  <p className="text-[#E5E7EB] text-sm">
-                    1000+ events
-                  </p>
+                    <p className="text-[#E5E7EB] text-sm">
+                      1000+ events
+                    </p>
+                  </div>
+
+                  {/* ✨ CATEGORY COLORED SHINE LINE */}
+                  <div
+                    className="absolute bottom-0 left-0 h-[3px] w-0 group-hover:w-full transition-all duration-700"
+                    style={{
+                      backgroundImage: `linear-gradient(to right, ${colors.primary}, ${colors.secondary})`,
+                    }}
+                  />
                 </div>
 
-                {/* shine line */}
-                <div className="absolute bottom-0 left-0 h-[3px] w-0 bg-gradient-to-r from-[#2563EB] to-[#3B82F6] group-hover:w-full transition-all duration-700" />
-              </div>
-
-            </Link>
-          </motion.div>
-        ))}
+              </Link>
+            </motion.div>
+          )
+        })}
       </motion.div>
     </section>
   )
