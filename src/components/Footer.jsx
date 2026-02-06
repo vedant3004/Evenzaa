@@ -24,6 +24,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-gradient-to-r from-[#0B1120] to-[#020617] text-[#9CA3AF] pt-20">
+
       {/* ================= MAIN ================= */}
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 pb-14">
 
@@ -31,7 +32,7 @@ export default function Footer() {
         <div>
           <div className="flex items-center gap-4 mb-6">
             <Image src="/logo/VY.png" width={56} height={56} alt="EvenZaa" />
-            <h2 className="text-3xl font-bold text-white">  𝓔𝓿𝓮𝓷𝓩𝓪𝓪</h2>
+            <h2 className="text-3xl font-bold text-white">𝓔𝓿𝓮𝓷𝓩𝓪𝓪</h2>
           </div>
 
           <p className="text-base leading-7 max-w-sm mb-4">
@@ -53,12 +54,10 @@ export default function Footer() {
               A/3, 2:12, Swagat CHS, Sector-24, Nerul (West),
               Navi Mumbai – 400706
             </li>
-
             <li className="flex gap-3">
               <Phone size={18} className="text-[#3B82F6]" />
               +91 9594332865
             </li>
-
             <li className="flex gap-3">
               <Mail size={18} className="text-[#3B82F6]" />
               support@evenzaa.com
@@ -66,8 +65,9 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* ================= MIDDLE (SHIFTED RIGHT) ================= */}
+        {/* ================= MIDDLE ================= */}
         <div className="flex gap-20 justify-end pr-6">
+
           <div>
             <h4 className="footer-heading">Quick Links</h4>
             <ul className="space-y-4 text-base">
@@ -89,12 +89,12 @@ export default function Footer() {
               </li>
             </ul>
           </div>
+
         </div>
 
         {/* ================= RIGHT ================= */}
         <div className="relative flex flex-col items-center">
 
-          {/* Our Location heading aligned to Mumbai dot */}
           <h4
             className="footer-heading absolute"
             style={{ top: "0%", right: "16%" }}
@@ -102,26 +102,23 @@ export default function Footer() {
             Our Location
           </h4>
 
-          {/* DOT AREA */}
-          <div className="relative h-28 max-w-[340px] w-full mb-19 mt-0">
+          <div className="relative h-28 max-w-[350px] w-full mt-19 mb-0">
             {locations.map((loc, i) => (
               <div
                 key={i}
                 className="absolute group"
                 style={{ top: loc.top, left: loc.left }}
               >
-                {/* DOT */}
                 <span
-                  className="relative block w-3.5 h-3.5 rounded-full bg-[#3B82F6]"
+                  className="relative block w-3.5 h-3.5 rounded-full bg-[#3B82F6] animate-locationGlow"
                   style={{ animationDelay: loc.delay }}
                 >
                   <span
-                    className="absolute inset-0 rounded-full bg-[#3B82F6] blur-xl opacity-40 animate-locationGlow"
+                    className="absolute inset-0 rounded-full bg-[#3B82F6] blur-2xl opacity-60 animate-locationGlow"
                     style={{ animationDelay: loc.delay }}
                   />
                 </span>
 
-                {/* TOOLTIP */}
                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-[#020617] px-2 py-1 rounded text-white opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
                   {loc.name}
                 </span>
@@ -129,7 +126,6 @@ export default function Footer() {
             ))}
           </div>
 
-          {/* SOCIAL ICONS */}
           <div className="flex gap-4">
             {[Facebook, Twitter, Linkedin, Instagram].map((Icon, i) => (
               <span
@@ -148,28 +144,29 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <span>© 2026 EvenZaa. All Rights Reserved.</span>
           <div className="flex gap-6">
-            <span className="hover:text-[#3B82F6] cursor-pointer">Privacy Policy</span>
-            <span className="hover:text-[#3B82F6] cursor-pointer">Terms of Service</span>
-            <span className="hover:text-[#3B82F6] cursor-pointer">Sitemap</span>
+            <span className="hover:text-[#F59E0B] cursor-pointer">Privacy Policy</span>
+            <span className="hover:text-[#F59E0B] cursor-pointer">Terms of Service</span>
+            <span className="hover:text-[#F59E0B] cursor-pointer">Sitemap</span>
           </div>
         </div>
       </div>
 
       {/* ================= STYLES ================= */}
       <style jsx>{`
+        /* HEADINGS */
         .footer-heading {
           position: relative;
           display: inline-block;
           font-size: 1.125rem;
           font-weight: 600;
-          color: white;
+          color: white; /* DEFAULT WHITE */
           margin-bottom: 1.25rem;
           cursor: pointer;
           transition: color 0.3s ease;
         }
 
         .footer-heading:hover {
-          color: #3B82F6;
+          color: #3B82F6; /* BLUE ON HOVER */
         }
 
         .footer-heading::after {
@@ -179,7 +176,7 @@ export default function Footer() {
           bottom: -6px;
           width: 0%;
           height: 2px;
-          background: #3B82F6;
+          background: #3B82F6; /* BLUE LINE */
           transform: translateX(-50%);
           transition: width 0.35s ease;
         }
@@ -188,18 +185,24 @@ export default function Footer() {
           width: 100%;
         }
 
-        .footer-link:hover {
-          color: #3B82F6;
+        /* LINKS UNDER HEADING */
+        .footer-link {
+          transition: color 0.25s ease;
         }
 
+        .footer-link:hover {
+          color: #F59E0B; /* GOLD */
+        }
+
+        /* LOCATION DOT GLOW */
         @keyframes locationGlow {
-          0% { transform: scale(1); opacity: 0.3; }
-          50% { transform: scale(2); opacity: 0.15; }
-          100% { transform: scale(1); opacity: 0.3; }
+          0% { transform: scale(1); opacity: 0.35; }
+          50% { transform: scale(2.2); opacity: 0.15; }
+          100% { transform: scale(1); opacity: 0.35; }
         }
 
         .animate-locationGlow {
-          animation: locationGlow 2.4s ease-in-out infinite;
+          animation: locationGlow 2.6s ease-in-out infinite;
         }
       `}</style>
     </footer>
