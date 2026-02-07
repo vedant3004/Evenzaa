@@ -25,7 +25,6 @@ export default function Footer() {
   return (
     <footer className="bg-gradient-to-r from-[#0B1120] to-[#020617] text-[#9CA3AF] pt-20">
 
-      {/* ================= MAIN ================= */}
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 pb-14">
 
         {/* ================= LEFT ================= */}
@@ -97,33 +96,43 @@ export default function Footer() {
 
           <h4
             className="footer-heading absolute"
-            style={{ top: "0%", right: "16%" }}
+            style={{ top: "0%", right: "53%" }}
           >
             Our Location
           </h4>
 
-          <div className="relative h-28 max-w-[350px] w-full mt-19 mb-0">
+          <div className="relative h-28 max-w-[350px] w-full mt-20 mb-4">
+
             {locations.map((loc, i) => (
               <div
                 key={i}
-                className="absolute group"
+                className="absolute"
                 style={{ top: loc.top, left: loc.left }}
               >
-                <span
-                  className="relative block w-3.5 h-3.5 rounded-full bg-[#3B82F6] animate-locationGlow"
-                  style={{ animationDelay: loc.delay }}
-                >
-                  <span
-                    className="absolute inset-0 rounded-full bg-[#3B82F6] blur-2xl opacity-60 animate-locationGlow"
-                    style={{ animationDelay: loc.delay }}
-                  />
-                </span>
 
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-[#020617] px-2 py-1 rounded text-white opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                {/* ===== CENTER DOT ===== */}
+                <span className="relative block w-3 h-3 rounded-full bg-[#3B82F6] z-10 shadow-[0_0_12px_#3B82F6]" />
+
+                {/* ===== PULSE RING 1 ===== */}
+                <span
+                  className="absolute inset-0 rounded-full ring-blink"
+                  style={{ animationDelay: loc.delay }}
+                />
+
+                {/* ===== PULSE RING 2 ===== */}
+                <span
+                  className="absolute inset-0 rounded-full ring-blink ring-blink-2"
+                  style={{ animationDelay: loc.delay }}
+                />
+
+                {/* ===== TOOLTIP ===== */}
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-[#020617] px-2 py-1 rounded text-white opacity-0 hover:opacity-100 transition whitespace-nowrap">
                   {loc.name}
                 </span>
+
               </div>
             ))}
+
           </div>
 
           <div className="flex gap-4">
@@ -136,6 +145,7 @@ export default function Footer() {
               </span>
             ))}
           </div>
+
         </div>
       </div>
 
@@ -153,56 +163,35 @@ export default function Footer() {
 
       {/* ================= STYLES ================= */}
       <style jsx>{`
-        /* HEADINGS */
         .footer-heading {
-          position: relative;
-          display: inline-block;
           font-size: 1.125rem;
           font-weight: 600;
-          color: white; /* DEFAULT WHITE */
+          color: white;
           margin-bottom: 1.25rem;
-          cursor: pointer;
-          transition: color 0.3s ease;
-        }
-
-        .footer-heading:hover {
-          color: #3B82F6; /* BLUE ON HOVER */
-        }
-
-        .footer-heading::after {
-          content: "";
-          position: absolute;
-          left: 50%;
-          bottom: -6px;
-          width: 0%;
-          height: 2px;
-          background: #3B82F6; /* BLUE LINE */
-          transform: translateX(-50%);
-          transition: width 0.35s ease;
-        }
-
-        .footer-heading:hover::after {
-          width: 100%;
-        }
-
-        /* LINKS UNDER HEADING */
-        .footer-link {
-          transition: color 0.25s ease;
         }
 
         .footer-link:hover {
-          color: #F59E0B; /* GOLD */
+          color: #F59E0B;
         }
 
-        /* LOCATION DOT GLOW */
-        @keyframes locationGlow {
-          0% { transform: scale(1); opacity: 0.35; }
-          50% { transform: scale(2.2); opacity: 0.15; }
-          100% { transform: scale(1); opacity: 0.35; }
+        @keyframes ringBlink {
+          0% {
+            transform: scale(1);
+            opacity: 0.45;
+          }
+          100% {
+            transform: scale(4.2);
+            opacity: 0;
+          }
         }
 
-        .animate-locationGlow {
-          animation: locationGlow 2.6s ease-in-out infinite;
+        .ring-blink {
+          animation: ringBlink 2.8s ease-out infinite;
+          background: rgba(59, 130, 246, 0.45);
+        }
+
+        .ring-blink-2 {
+          animation-delay: 1.4s;
         }
       `}</style>
     </footer>
