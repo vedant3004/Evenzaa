@@ -96,12 +96,12 @@ export default function Footer() {
 
           <h4
             className="footer-heading absolute"
-            style={{ top: "0%", right: "53%" }}
+            style={{ top: "0%", right: "18%" }}
           >
             Our Location
           </h4>
 
-          <div className="relative h-28 max-w-[350px] w-full mt-20 mb-4">
+          <div className="relative h-28 max-w-[350px] w-full mt- mb-8">
 
             {locations.map((loc, i) => (
               <div
@@ -110,22 +110,18 @@ export default function Footer() {
                 style={{ top: loc.top, left: loc.left }}
               >
 
-                {/* ===== CENTER DOT ===== */}
                 <span className="relative block w-3 h-3 rounded-full bg-[#3B82F6] z-10 shadow-[0_0_12px_#3B82F6]" />
 
-                {/* ===== PULSE RING 1 ===== */}
                 <span
                   className="absolute inset-0 rounded-full ring-blink"
                   style={{ animationDelay: loc.delay }}
                 />
 
-                {/* ===== PULSE RING 2 ===== */}
                 <span
                   className="absolute inset-0 rounded-full ring-blink ring-blink-2"
                   style={{ animationDelay: loc.delay }}
                 />
 
-                {/* ===== TOOLTIP ===== */}
                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-[#020617] px-2 py-1 rounded text-white opacity-0 hover:opacity-100 transition whitespace-nowrap">
                   {loc.name}
                 </span>
@@ -163,17 +159,49 @@ export default function Footer() {
 
       {/* ================= STYLES ================= */}
       <style jsx>{`
+        /* HEADING */
         .footer-heading {
+          position: relative;
           font-size: 1.125rem;
           font-weight: 600;
           color: white;
           margin-bottom: 1.25rem;
+          cursor: pointer;
+          transition: color 0.3s ease;
+        }
+
+        /* HEADING HOVER BLUE */
+        .footer-heading:hover {
+          color: #3B82F6;
+        }
+
+        /* BLUE LINE UNDER HEADING */
+        .footer-heading::after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          bottom: -6px;
+          width: 0%;
+          height: 2px;
+          background: #3B82F6;
+          transform: translateX(-50%);
+          transition: width 0.35s ease;
+        }
+
+        .footer-heading:hover::after {
+          width: 100%;
+        }
+
+        /* QUICK LINKS GOLDEN */
+        .footer-link {
+          transition: color 0.25s ease;
         }
 
         .footer-link:hover {
           color: #F59E0B;
         }
 
+        /* LOCATION RING */
         @keyframes ringBlink {
           0% {
             transform: scale(1);
