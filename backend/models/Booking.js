@@ -4,36 +4,60 @@ const sequelize = require("../db")
 const Booking = sequelize.define(
   "Booking",
   {
-    // ================= EXISTING FIELDS (UNCHANGED) =================
-    date: DataTypes.DATEONLY,
-    time: DataTypes.STRING,
-    amount: DataTypes.FLOAT,
+    // ================= EXISTING FIELDS =================
+    date: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+
+    time: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    amount: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+
     status: {
-      type: DataTypes.ENUM("pending", "paid"),
+      type: DataTypes.ENUM("pending", "paid", "confirmed"),
       defaultValue: "pending",
     },
 
-    // ================= ADDED FIELDS (DO NOT REMOVE) =================
-
-    // 🔹 User who booked
+    // ================= USER / VENDOR =================
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
 
-    // 🔹 Vendor who will see this booking
     vendor_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
 
-    // 🔹 Vendor business that was booked
     vendor_business_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
 
-    // 🔹 Optional customer info snapshot (safe add)
+    // ================= SNAPSHOT =================
+    vendor_name: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    service: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    price: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+
+    // ================= CUSTOMER =================
     customer_name: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -48,35 +72,30 @@ const Booking = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+
+    // ================= PAYMENT =================
+    payment_method: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    payment_status: {
+      type: DataTypes.ENUM("pending", "paid"),
+      defaultValue: "pending",
+    },
   },
   {
     tableName: "Bookings",
     timestamps: true,
 
-    // =================================================
-    // ============ DELETE SAFETY (🆕) =================
-    // =================================================
     hooks: {
-      beforeDestroy: async (booking, options) => {
-        try {
-          console.log(
-            "🗑️ Deleting booking safely:",
-            booking.id,
-            "Vendor:",
-            booking.vendor_id,
-            "User:",
-            booking.user_id
-          )
-
-          // 🔒 Future scope:
-          // - refund logs
-          // - payment rollback
-          // - analytics cleanup
-
-        } catch (err) {
-          console.error("❌ Booking beforeDestroy hook error:", err)
-          throw err
-        }
+      beforeDestroy: async (booking) => {
+        console.log(
+          "🗑️ Deleting booking:",
+          booking.id,
+          booking.vendor_id,
+          booking.user_id
+        )
       },
     },
   }

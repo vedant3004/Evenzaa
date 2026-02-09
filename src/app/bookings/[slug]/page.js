@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import vendors from "../../../data/vendors" // 🔁 fallback only
+import vendors from "../../../data/vendors"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -25,24 +25,23 @@ export default function BookingPage() {
   })
 
   const [useSaved, setUseSaved] = useState(false)
-  const [editAddress, setEditAddress] = useState(false) // 🆕 ADDED
+  const [editAddress, setEditAddress] = useState(false)
   const [showModal, setShowModal] = useState(false)
 
-  // ================= FETCH VENDOR (DB FIRST) =================
+  // ================= FETCH VENDOR =================
   useEffect(() => {
     const fetchVendor = async () => {
       try {
-        const url = `${API_BASE}/api/vendor/businesses/${slug}`
-        console.log("🔗 Fetch booking vendor:", url)
-
-        const res = await fetch(url, { cache: "no-store" })
+        const res = await fetch(
+          `${API_BASE}/api/vendor/businesses/${slug}`,
+          { cache: "no-store" }
+        )
 
         if (res.ok) {
           const data = await res.json()
-          console.log("📥 Booking vendor response:", data)
-
           setVendor({
-            id: data.id,
+            id: data.id,                 // 🔥 vendor_business_id
+            vendorId: data.vendor_id,    // 🔥 actual vendor login id
             slug: data.slug,
             name: data.business_name,
             service: data.service_type,
@@ -51,13 +50,10 @@ export default function BookingPage() {
             location: data.city,
           })
         } else {
-          const localVendor = vendors.find(v => v.slug === slug)
-          setVendor(localVendor || null)
+          setVendor(vendors.find(v => v.slug === slug) || null)
         }
-      } catch (err) {
-        console.error("❌ DB vendor fetch failed:", err)
-        const localVendor = vendors.find(v => v.slug === slug)
-        setVendor(localVendor || null)
+      } catch {
+        setVendor(vendors.find(v => v.slug === slug) || null)
       } finally {
         setLoading(false)
       }
@@ -76,19 +72,11 @@ export default function BookingPage() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="pt-32 text-center text-gray-400">
-        Loading booking...
-      </div>
-    )
+    return <div className="pt-32 text-center text-gray-400">Loading booking...</div>
   }
 
   if (!vendor) {
-    return (
-      <div className="pt-32 text-center text-xl font-semibold text-gray-400">
-        Vendor not found
-      </div>
-    )
+    return <div className="pt-32 text-center text-gray-400">Vendor not found</div>
   }
 
   const handleChange = (e) => {
@@ -103,13 +91,63 @@ export default function BookingPage() {
     setShowModal(true)
   }
 
-  const confirmBooking = () => {
+  // ================= 🔥 CREATE BOOKING IN DB (FIXED) =================
+  const createBookingInDB = async () => {
+    try {
+      const token = localStorage.getItem("evenzaa_token")
+
+      const res = await fetch(`${API_BASE}/api/bookings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          // ✅ EXACT backend expected keys
+          vendorId: vendor.vendorId,              // 🔥 vendors.id
+          vendorName: vendor.name,
+          service: vendor.service,
+          price: vendor.price,
+          address: `${form.address}, ${form.city}`,
+
+          // 🆕 extra safe snapshot (backend ignores but DB keeps)
+          vendor_business_id: vendor.id,
+          customer_name: form.name,
+          customer_phone: form.phone,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        console.error("❌ Booking API error:", data)
+        return null
+      }
+
+      return data.id || data.bookingId || null
+    } catch (err) {
+      console.error("❌ Booking DB error:", err)
+      return null
+    }
+  }
+
+  // ================= CONFIRM =================
+  const confirmBooking = async () => {
     localStorage.setItem("user_address", JSON.stringify(form))
+
+    const bookingId = await createBookingInDB()
+
+    if (!bookingId) {
+      alert("Booking failed. Please try again.")
+      return
+    }
 
     localStorage.setItem(
       "pendingBooking",
       JSON.stringify({
-        vendorId: vendor.id,
+        bookingId,
+        vendorId: vendor.vendorId,
+        vendorBusinessId: vendor.id,
         vendorSlug: vendor.slug,
         vendorName: vendor.name,
         vendorImage: vendor.image,
@@ -136,8 +174,8 @@ export default function BookingPage() {
 
       <div className="grid md:grid-cols-2 gap-10">
 
-        {/* VENDOR CARD */}
-        <div className="bg-[#111827] p-8 rounded-2xl shadow-xl border border-[#1F2937]">
+        {/* VENDOR */}
+        <div className="bg-[#111827] p-8 rounded-2xl border border-[#1F2937]">
           <Image
             src={vendor.image}
             width={400}
@@ -151,108 +189,38 @@ export default function BookingPage() {
         </div>
 
         {/* ADDRESS */}
-        <div className="bg-[#111827] p-8 rounded-2xl shadow-xl border border-[#1F2937]">
-          <h2 className="text-2xl font-bold mb-4 text-white">
-            Delivery Address
-          </h2>
+        <div className="bg-[#111827] p-8 rounded-2xl border border-[#1F2937]">
+          <h2 className="text-2xl font-bold mb-4 text-white">Delivery Address</h2>
 
-          {/* 🆕 SHOW SAVED ADDRESS */}
-          {useSaved && !editAddress && (
-            <div className="mb-4 text-gray-300">
-              <p className="font-semibold text-white">
-                {form.name} ({form.phone})
-              </p>
-              <p className="text-gray-400">
-                {form.address}, {form.city}
-              </p>
-
-              <button
-                onClick={() => setEditAddress(true)}
-                className="mt-3 text-blue-400 font-semibold"
-              >
-                ✏️ Edit Address
-              </button>
-            </div>
-          )}
-
-          {/* EXISTING FORM (REUSED FOR EDIT ALSO) */}
           {(!useSaved || editAddress) && (
             <div className="space-y-3">
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                className="input"
-                placeholder="Full Name"
-              />
-              <input
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                className="input"
-                placeholder="Phone"
-              />
-              <input
-                name="city"
-                value={form.city}
-                onChange={handleChange}
-                className="input"
-                placeholder="City"
-              />
-              <textarea
-                name="address"
-                value={form.address}
-                onChange={handleChange}
-                className="input"
-                placeholder="Address"
-              />
-
-              {useSaved && editAddress && (
-                <button
-                  onClick={() => setEditAddress(false)}
-                  className="text-sm text-gray-400"
-                >
-                  Cancel Edit
-                </button>
-              )}
+              <input name="name" value={form.name} onChange={handleChange} className="input" placeholder="Full Name" />
+              <input name="phone" value={form.phone} onChange={handleChange} className="input" placeholder="Phone" />
+              <input name="city" value={form.city} onChange={handleChange} className="input" placeholder="City" />
+              <textarea name="address" value={form.address} onChange={handleChange} className="input" placeholder="Address" />
             </div>
           )}
 
-          <button
-            onClick={openConfirmation}
-            className="btn-primary w-full mt-6"
-          >
+          <button onClick={openConfirmation} className="btn-primary w-full mt-6">
             Proceed to Payment
           </button>
         </div>
       </div>
 
-      {/* CONFIRM MODAL */}
+      {/* MODAL */}
       <AnimatePresence>
         {showModal && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
             <div className="bg-[#111827] p-6 rounded-xl max-w-md w-full border border-[#1F2937]">
-              <h3 className="text-xl font-bold mb-3 text-white">
-                Confirm Address
-              </h3>
-              <p className="text-white">
-                {form.name} • {form.phone}
-              </p>
-              <p className="text-gray-400">
-                {form.address}, {form.city}
-              </p>
+              <h3 className="text-xl font-bold mb-3 text-white">Confirm Address</h3>
+              <p className="text-white">{form.name} • {form.phone}</p>
+              <p className="text-gray-400">{form.address}, {form.city}</p>
 
               <div className="flex gap-4 mt-6">
-                <button
-                  onClick={confirmBooking}
-                  className="btn-primary flex-1"
-                >
+                <button onClick={confirmBooking} className="btn-primary flex-1">
                   Continue
                 </button>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="border flex-1 rounded-lg text-gray-400"
-                >
+                <button onClick={() => setShowModal(false)} className="border flex-1 rounded-lg text-gray-400">
                   Cancel
                 </button>
               </div>
