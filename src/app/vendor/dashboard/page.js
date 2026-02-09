@@ -1,7 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { BarChart3, Wallet, Crown, X, LogOut, Store, UserCog } from "lucide-react"
+import {
+  BarChart3,
+  Wallet,
+  Crown,
+  X,
+  Store,
+  UserCog,
+  ClipboardList,
+} from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../../../context/AuthContext"
 
@@ -10,14 +18,19 @@ const API_BASE =
 
 export default function VendorDash() {
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
 
   const [vendor, setVendor] = useState(null)
   const [loading, setLoading] = useState(true)
 
   const [businessOpen, allowBusinessOpen] = useState(false)
+  const [activePanel, setActivePanel] = useState("stats")
   const [saving, setSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState("")
+
+  // 🔥 NEW: BOOKINGS STATE
+  const [bookings, setBookings] = useState([])
+  const [bookingLoading, setBookingLoading] = useState(false)
 
   const [businessForm, setBusinessForm] = useState({
     business: "",
@@ -30,234 +43,248 @@ export default function VendorDash() {
     description: "",
   })
 
+  // ================= LOAD VENDOR =================
   useEffect(() => {
-    if (user === undefined) return
-
-    if (user && user.role === "vendor") {
-      setVendor(user)
-      setBusinessForm({
-        business: user.name || "",
-        service_type: user.service_type || "",
-        price: user.price || "",
-        city: user.city || "",
-        phone: user.phone || "",
-        image: user.image || "",
-        services: Array.isArray(user.services)
-          ? user.services.join(", ")
-          : "",
-        description: user.description || "",
-      })
-    }
-
+    if (!user) return
+    setVendor(user)
     setLoading(false)
   }, [user])
 
-  const logoutVendor = () => {
-    logout()
-    router.push("/vendor/login")
-  }
+  // ================= 🔥 FETCH BOOKINGS =================
+  useEffect(() => {
+    if (!user || user.role !== "vendor") return
+
+    const fetchBookings = async () => {
+      try {
+        setBookingLoading(true)
+        const token = localStorage.getItem("evenzaa_token")
+
+        const res = await fetch(`${API_BASE}/api/bookings/vendor`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        const data = await res.json()
+        if (Array.isArray(data)) {
+          setBookings(data)
+        }
+      } catch (err) {
+        console.error("❌ Vendor booking fetch failed:", err)
+      } finally {
+        setBookingLoading(false)
+      }
+    }
+
+    fetchBookings()
+  }, [user])
 
   const saveBusiness = async () => {
-    if (!businessForm.business || !businessForm.city || !businessForm.service_type) {
-      alert("Business name, city and service type required")
-      return
-    }
-
     const token = localStorage.getItem("evenzaa_token")
-    if (!token) {
-      alert("Session expired. Please login again.")
-      logoutVendor()
-      return
-    }
-
-    const payload = {
-      business: businessForm.business,
-      service_type: businessForm.service_type,
-      price: Number(businessForm.price || 0),
-      city: businessForm.city,
-      phone: businessForm.phone,
-      image: businessForm.image,
-      services: businessForm.services
-        ? businessForm.services.split(",").map(s => s.trim())
-        : [],
-      description: businessForm.description,
-    }
+    if (!token) return
 
     try {
       setSaving(true)
 
-      const res = await fetch(`${API_BASE}/api/vendor/business`, {
+      await fetch(`${API_BASE}/api/vendor/business`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(businessForm),
       })
 
-      const data = await res.json()
-
-      if (!res.ok) {
-        alert(data.message || "Failed to save business")
-        return
-      }
-
-      setSuccessMsg("✅ Business saved successfully! Pending admin approval.")
+      setSuccessMsg("✅ Business saved successfully!")
       setTimeout(() => setSuccessMsg(""), 3000)
       allowBusinessOpen(false)
-    } catch (err) {
-      alert("Server error while saving business")
+    } catch {
+      alert("Error saving business")
     } finally {
       setSaving(false)
     }
   }
 
   if (loading) {
-    return <div className="pt-32 text-center text-gray-400">Loading dashboard...</div>
-  }
-
-  if (!vendor) {
-    return <div className="pt-32 text-center text-xl text-gray-300">Vendor login required</div>
+    return (
+      <div className="pt-32 text-center text-gray-400">
+        Loading dashboard...
+      </div>
+    )
   }
 
   return (
-    <div className="pt-32 min-h-screen bg-[#0B1120] px-4">
+    <div className="pt-28 min-h-screen bg-[#0B1120] px-4 relative">
+
+      {/* ================= FLOATING ICON BAR ================= */}
+      <div className="fixed top-20 right-6 z-40 flex gap-3
+                      bg-[#020617]/80 backdrop-blur-md
+                      border border-[#1F2937]
+                      px-4 py-2 rounded-full shadow-xl animate-fadeUp">
+        <IconBtn label="Stats" onClick={() => setActivePanel("stats")}>
+          <BarChart3 />
+        </IconBtn>
+
+        <IconBtn label="Business" onClick={() => allowBusinessOpen(true)}>
+          <Store />
+        </IconBtn>
+
+        <IconBtn label="Account" onClick={() => setActivePanel("account")}>
+          <UserCog />
+        </IconBtn>
+
+        <IconBtn label="Bookings" onClick={() => setActivePanel("bookings")}>
+          <ClipboardList />
+        </IconBtn>
+      </div>
+
       <div className="max-w-6xl mx-auto">
 
-        <div className="flex justify-between mb-8">
-          <h1 className="text-4xl font-extrabold text-white">
-            Welcome, {vendor.name}
-          </h1>
-          {/* <button
-            onClick={logoutVendor}
-            className="flex gap-2 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
-          >
-            <LogOut size={18} /> Logout
-          </button> */}
-        </div>
+        <h1 className="text-4xl font-extrabold text-white mb-10">
+          Welcome, {vendor?.name}
+        </h1>
 
         {successMsg && (
-          <div className="mb-6 p-4 bg-emerald-900/40 text-emerald-400 rounded-xl font-semibold border border-emerald-700">
+          <div className="mb-6 p-4 bg-emerald-900/40 text-emerald-400
+                          rounded-xl border border-emerald-700">
             {successMsg}
           </div>
         )}
 
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Stat icon={<Wallet className="text-cyan-400" />} label="Total Sales" value={`₹${vendor.sales || 0}`} />
-          <Stat icon={<Crown className="text-yellow-400" />} label="Membership" value={vendor.plan || "Standard"} />
-          <Stat icon={<BarChart3 className="text-purple-400" />} label="Performance" value="Excellent" />
-        </div>
+        {/* ================= STATS ================= */}
+        {activePanel === "stats" && (
+          <div className="grid md:grid-cols-3 gap-8 mb-16 animate-fadeUp">
+            <Stat icon={<Wallet className="text-cyan-400" />} label="Total Sales" value={`₹${bookings.reduce((t,b)=>t+(b.amount||0),0)}`} />
+            <Stat icon={<Crown className="text-yellow-400" />} label="Membership" value="Standard" />
+            <Stat icon={<BarChart3 className="text-purple-400" />} label="Performance" value="Active" />
+          </div>
+        )}
 
-        <div className="grid md:grid-cols-3 gap-8">
-          <ActionCard
-            icon={<Store className="text-cyan-400" />}
-            title="Add / Update Business Listing"
-            desc="This listing will be visible to customers"
-            action={() => allowBusinessOpen(true)}
-          />
+        {/* ================= BOOKINGS ================= */}
+        {activePanel === "bookings" && (
+          <div className="bg-[#111827] border border-[#1F2937]
+                          p-8 rounded-2xl animate-fadeUp">
+            <h2 className="text-2xl font-bold text-white mb-4">
+              Bookings & Leads
+            </h2>
 
-          <ActionCard
-            icon={<UserCog className="text-purple-400" />}
-            title="Account Settings"
-            desc="Manage your account"
-            link="/vendor/dashboard/account"
-          />
+            {bookingLoading && (
+              <p className="text-gray-400">Loading bookings...</p>
+            )}
 
-          <ActionCard
-            title="Bookings & Leads"
-            desc="View customer bookings"
-            link="/vendor/dashboard/bookings"
-          />
-        </div>
+            {!bookingLoading && bookings.length === 0 && (
+              <p className="text-gray-400">No bookings yet.</p>
+            )}
+
+            {!bookingLoading && bookings.length > 0 && (
+              <div className="space-y-4">
+                {bookings.map(b => (
+                  <div
+                    key={b.id}
+                    className="border border-[#1F2937]
+                               rounded-xl p-4 bg-[#0F172A]"
+                  >
+                    <p className="text-white font-semibold">
+                      {b.customer_name} – ₹{b.amount}
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      {b.service} | {b.customer_phone}
+                    </p>
+                    <p className="text-gray-500 text-xs">
+                      Status: {b.status}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ================= ACCOUNT ================= */}
+        {activePanel === "account" && (
+          <div className="bg-[#111827] border border-[#1F2937]
+                          p-8 rounded-2xl animate-fadeUp">
+            <h2 className="text-2xl font-bold text-white mb-3">
+              Account Settings
+            </h2>
+            <p className="text-gray-400">
+              Managed by admin for non-technical vendors.
+            </p>
+          </div>
+        )}
       </div>
 
+      {/* ================= BUSINESS MODAL ================= */}
       {businessOpen && (
-        <Modal
-          title="Add / Update Business Listing"
-          onClose={() => allowBusinessOpen(false)}
-          footer={
-            <button
-              onClick={saveBusiness}
-              disabled={saving}
-              className="w-full btn-primary"
-            >
-              {saving ? "Saving..." : "Save Business"}
-            </button>
-          }
-        >
-          <Input label="Business Name" value={businessForm.business}
-            onChange={v => setBusinessForm({ ...businessForm, business: v })} />
-          <Input label="Service Type" value={businessForm.service_type}
-            onChange={v => setBusinessForm({ ...businessForm, service_type: v })} />
-          <Input label="Starting Price" value={businessForm.price}
-            onChange={v => setBusinessForm({ ...businessForm, price: v })} />
-          <Input label="City" value={businessForm.city}
-            onChange={v => setBusinessForm({ ...businessForm, city: v })} />
-          <Input label="Phone" value={businessForm.phone}
-            onChange={v => setBusinessForm({ ...businessForm, phone: v })} />
-          <Input label="Image URL" value={businessForm.image}
-            onChange={v => setBusinessForm({ ...businessForm, image: v })} />
+        <Modal title="Add / Update Business" onClose={() => allowBusinessOpen(false)}>
+          <Input label="Business Name" onChange={v => setBusinessForm({ ...businessForm, business: v })} />
+          <Input label="Service Type" onChange={v => setBusinessForm({ ...businessForm, service_type: v })} />
+          <Input label="City" onChange={v => setBusinessForm({ ...businessForm, city: v })} />
+          <Input label="Phone" onChange={v => setBusinessForm({ ...businessForm, phone: v })} />
 
-          <textarea className="input" rows={2} placeholder="Services (comma separated)"
-            value={businessForm.services}
-            onChange={e => setBusinessForm({ ...businessForm, services: e.target.value })} />
-
-          <textarea className="input" rows={3} placeholder="Business Description"
-            value={businessForm.description}
-            onChange={e => setBusinessForm({ ...businessForm, description: e.target.value })} />
+          <button
+            onClick={saveBusiness}
+            className="btn-primary w-full mt-4"
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Save Business"}
+          </button>
         </Modal>
       )}
     </div>
   )
 }
 
-/* ================= EXTRA COMPONENTS ================= */
+/* ================= COMPONENTS ================= */
+
+const IconBtn = ({ children, label, onClick }) => (
+  <button
+    onClick={onClick}
+    className="group relative w-10 h-10 rounded-full
+               bg-[#111827] border border-[#1F2937]
+               text-blue-400 flex items-center justify-center
+               hover:bg-blue-600 hover:text-white transition"
+  >
+    {children}
+    <span className="absolute -bottom-8 text-xs px-2 py-1 rounded
+                     bg-black text-white opacity-0
+                     group-hover:opacity-100 transition whitespace-nowrap">
+      {label}
+    </span>
+  </button>
+)
 
 const Stat = ({ icon, label, value }) => (
-  <div className="bg-[#111827] border border-[#1F2937] p-6 rounded-xl shadow flex gap-4 items-center">
+  <div className="bg-[#111827] border border-[#1F2937]
+                  p-6 rounded-xl flex gap-4 items-center">
     {icon}
     <div>
       <p className="text-gray-400">{label}</p>
-      <h3 className="font-bold text-xl text-white">{value}</h3>
+      <h3 className="text-xl font-bold text-white">{value}</h3>
     </div>
   </div>
 )
 
-const ActionCard = ({ icon, title, desc, action, link }) => (
-  <div className="bg-[#111827] border border-[#1F2937] p-8 rounded-2xl shadow-xl">
-    {icon}
-    <h3 className="font-bold text-xl mt-4 text-white">{title}</h3>
-    <p className="text-gray-400 mb-4">{desc}</p>
-    {action ? (
-      <button onClick={action} className="btn-primary w-full">Open</button>
-    ) : (
-      <a href={link} className="btn-primary block text-center">View</a>
-    )}
-  </div>
-)
-
-const Modal = ({ title, children, onClose, footer }) => (
-  <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-    <div className="bg-[#0F172A] w-full max-w-xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col border border-[#1F2937]">
-      <div className="flex justify-between items-center px-6 py-4 border-b border-[#1F2937]">
+const Modal = ({ title, children, onClose }) => (
+  <div className="fixed inset-0 bg-black/70 z-50
+                  flex items-center justify-center px-4">
+    <div className="bg-[#0F172A] w-full max-w-xl
+                    rounded-2xl border border-[#1F2937]">
+      <div className="flex justify-between items-center
+                      px-6 py-4 border-b border-[#1F2937]">
         <h2 className="text-xl font-bold text-white">{title}</h2>
-        <button onClick={onClose} className="text-gray-400 hover:text-white">
-          <X />
+        <button onClick={onClose}>
+          <X className="text-gray-400" />
         </button>
       </div>
-      <div className="px-6 py-4 overflow-y-auto space-y-4">{children}</div>
-      <div className="px-6 py-4 border-t border-[#1F2937]">{footer}</div>
+      <div className="px-6 py-4 space-y-4">{children}</div>
     </div>
   </div>
 )
 
-const Input = ({ label, value, onChange }) => (
+const Input = ({ label, onChange }) => (
   <div>
     <label className="text-sm text-gray-400">{label}</label>
-    <input
-      className="input mt-1"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-    />
+    <input className="input mt-1" onChange={e => onChange(e.target.value)} />
   </div>
 )

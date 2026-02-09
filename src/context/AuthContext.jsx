@@ -74,6 +74,12 @@ export function AuthProvider({ children }) {
   const isVendorPage = pathname.startsWith("/vendor")
   const isAdminPage = pathname.startsWith("/admin")
 
+  /* ================= TOKEN HELPER (🆕 ADD) ================= */
+  const getToken = () => {
+    if (typeof window === "undefined") return null
+    return localStorage.getItem("evenzaa_token")
+  }
+
   /* ================= USER LOGIN ================= */
   const login = async (data) => {
     try {
@@ -168,18 +174,12 @@ export function AuthProvider({ children }) {
     setOpen(false)
   }
 
-  /* ================= LOGOUT (🔥 FIXED) ================= */
+  /* ================= LOGOUT ================= */
   const logout = () => {
-    // ❌ DO NOT clear everything
-    // localStorage.clear()
-
-    // ✅ REMOVE ONLY AUTH RELATED KEYS
     localStorage.removeItem("eventzaa_user")
     localStorage.removeItem("evenzaa_vendor")
     localStorage.removeItem("evenzaa_admin")
     localStorage.removeItem("evenzaa_token")
-
-    // ❗ bookings / cache / history remain SAFE
 
     setUser(null)
     router.push("/")
@@ -194,6 +194,8 @@ export function AuthProvider({ children }) {
         setOpen,
         isVendorPage,
         isAdminPage,
+
+        getToken, // ✅ IMPORTANT
 
         login,
         register,

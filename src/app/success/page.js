@@ -10,24 +10,34 @@ export default function Success() {
   const [booking, setBooking] = useState(null)
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const last = JSON.parse(localStorage.getItem("lastBooking") || "null")
-      setBooking(last)
+    if (typeof window === "undefined") return
 
-      // Auto redirect after 6 sec
-      setTimeout(() => router.push("/bookings"), 6000)
-    }
-  }, [])
+    const last = JSON.parse(
+      localStorage.getItem("lastBooking") || "null"
+    )
+
+    setBooking(last)
+
+    // 🔥 AUTO REDIRECT AFTER 6s
+    const timer = setTimeout(() => {
+      router.push("/bookings")
+    }, 6000)
+
+    // ✅ CLEANUP (important)
+    return () => clearTimeout(timer)
+  }, [router])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0B1120] px-4">
 
-      <div className="bg-[#111827] rounded-3xl shadow-2xl p-10 text-center max-w-md w-full animate-fade-in border border-[#1F2937]">
+      <div className="bg-[#111827] rounded-3xl shadow-2xl p-10 text-center max-w-md w-full
+                      animate-fade-in border border-[#1F2937]">
 
-        <div className="relative mb-6">
+        {/* ICONS */}
+        <div className="relative mb-6 flex justify-center">
           <CheckCircle
             size={90}
-            className="text-emerald-400 mx-auto animate-bounce"
+            className="text-emerald-400 animate-bounce"
           />
           <PartyPopper
             size={34}
@@ -43,16 +53,53 @@ export default function Success() {
           Your vendor has been booked successfully.
         </p>
 
-        {/* BOOKING SUMMARY */}
-        {booking && (
-          <div className="bg-[#0F172A] rounded-xl p-4 text-sm text-left space-y-1 mb-6 text-[#9CA3AF] border border-[#1F2937]">
-            <p><b className="text-white">Vendor:</b> {booking.vendorName}</p>
-            <p><b className="text-white">Service:</b> {booking.service}</p>
-            <p><b className="text-white">Amount:</b> ₹{booking.price}</p>
-            <p><b className="text-white">Status:</b> {booking.status}</p>
+        {/* ================= BOOKING SUMMARY ================= */}
+        {booking ? (
+          <div className="bg-[#0F172A] rounded-xl p-4 text-sm text-left
+                          space-y-1 mb-6 text-[#9CA3AF]
+                          border border-[#1F2937]">
+
+            {booking.bookingId && (
+              <p>
+                <b className="text-white">Booking ID:</b>{" "}
+                #{booking.bookingId}
+              </p>
+            )}
+
+            <p>
+              <b className="text-white">Vendor:</b>{" "}
+              {booking.vendorName}
+            </p>
+
+            <p>
+              <b className="text-white">Service:</b>{" "}
+              {booking.service}
+            </p>
+
+            <p>
+              <b className="text-white">Amount:</b>{" "}
+              ₹{booking.price}
+            </p>
+
+            <p>
+              <b className="text-white">Status:</b>{" "}
+              {booking.status}
+            </p>
+
+            {booking.paymentMethod && (
+              <p>
+                <b className="text-white">Payment:</b>{" "}
+                {booking.paymentMethod}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="text-gray-400 text-sm mb-6">
+            Booking details not available.
           </div>
         )}
 
+        {/* CTA */}
         <Link href="/bookings" className="btn-primary w-full block">
           View My Bookings
         </Link>
