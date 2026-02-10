@@ -40,8 +40,8 @@ export default function BookingPage() {
         if (res.ok) {
           const data = await res.json()
           setVendor({
-            id: data.id,                 // 🔥 vendor_business_id
-            vendorId: data.vendor_id,    // 🔥 actual vendor login id
+            id: data.id,                 // vendor_business_id
+            vendorId: data.vendor_id,    // vendor login id
             slug: data.slug,
             name: data.business_name,
             service: data.service_type,
@@ -91,7 +91,7 @@ export default function BookingPage() {
     setShowModal(true)
   }
 
-  // ================= 🔥 CREATE BOOKING IN DB (FIXED) =================
+  // ================= CREATE BOOKING =================
   const createBookingInDB = async () => {
     try {
       const token = localStorage.getItem("evenzaa_token")
@@ -103,14 +103,11 @@ export default function BookingPage() {
           ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
-          // ✅ EXACT backend expected keys
-          vendorId: vendor.vendorId,              // 🔥 vendors.id
+          vendorId: vendor.vendorId,
           vendorName: vendor.name,
           service: vendor.service,
           price: vendor.price,
           address: `${form.address}, ${form.city}`,
-
-          // 🆕 extra safe snapshot (backend ignores but DB keeps)
           vendor_business_id: vendor.id,
           customer_name: form.name,
           customer_phone: form.phone,
@@ -118,16 +115,33 @@ export default function BookingPage() {
       })
 
       const data = await res.json()
-
-      if (!res.ok) {
-        console.error("❌ Booking API error:", data)
-        return null
-      }
+      if (!res.ok) return null
 
       return data.id || data.bookingId || null
-    } catch (err) {
-      console.error("❌ Booking DB error:", err)
+    } catch {
       return null
+    }
+  }
+
+  // ================= UPDATE ADDRESS IN DB =================
+  const updateBookingAddressInDB = async (bookingId) => {
+    try {
+      const token = localStorage.getItem("evenzaa_token")
+
+      await fetch(`${API_BASE}/api/bookings/${bookingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          address: `${form.address}, ${form.city}`,
+          customer_name: form.name,
+          customer_phone: form.phone,
+        }),
+      })
+    } catch (err) {
+      console.error("Address update failed", err)
     }
   }
 
@@ -135,7 +149,17 @@ export default function BookingPage() {
   const confirmBooking = async () => {
     localStorage.setItem("user_address", JSON.stringify(form))
 
-    const bookingId = await createBookingInDB()
+    let bookingId = null
+    const pending = JSON.parse(
+      localStorage.getItem("pendingBooking") || "null"
+    )
+
+    if (pending?.bookingId) {
+      bookingId = pending.bookingId
+      await updateBookingAddressInDB(bookingId)
+    } else {
+      bookingId = await createBookingInDB()
+    }
 
     if (!bookingId) {
       alert("Booking failed. Please try again.")
@@ -192,18 +216,49 @@ export default function BookingPage() {
         <div className="bg-[#111827] p-8 rounded-2xl border border-[#1F2937]">
           <h2 className="text-2xl font-bold mb-4 text-white">Delivery Address</h2>
 
+          {useSaved && !editAddress && (
+            <div className="text-gray-300 space-y-2">
+              <p><b>Name:</b> {form.name}</p>
+              <p><b>Phone:</b> {form.phone}</p>
+              <p><b>City:</b> {form.city}</p>
+              <p><b>Address:</b> {form.address}</p>
+
+              <button
+                onClick={() => setEditAddress(true)}
+                className="text-blue-400 underline mt-3"
+              >
+                ✏️ Edit Address
+              </button>
+            </div>
+          )}
+
           {(!useSaved || editAddress) && (
             <div className="space-y-3">
               <input name="name" value={form.name} onChange={handleChange} className="input" placeholder="Full Name" />
               <input name="phone" value={form.phone} onChange={handleChange} className="input" placeholder="Phone" />
               <input name="city" value={form.city} onChange={handleChange} className="input" placeholder="City" />
               <textarea name="address" value={form.address} onChange={handleChange} className="input" placeholder="Address" />
+
+              {editAddress && (
+                <button
+                  onClick={() => {
+                    localStorage.setItem("user_address", JSON.stringify(form))
+                    setEditAddress(false)
+                    setUseSaved(true)
+                  }}
+                  className="btn-primary w-full"
+                >
+                  Save Address
+                </button>
+              )}
             </div>
           )}
 
-          <button onClick={openConfirmation} className="btn-primary w-full mt-6">
-            Proceed to Payment
-          </button>
+          {!editAddress && (
+            <button onClick={openConfirmation} className="btn-primary w-full mt-6">
+              Proceed to Payment
+            </button>
+          )}
         </div>
       </div>
 

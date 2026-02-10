@@ -101,7 +101,7 @@ export default function Footer() {
             Our Location
           </h4>
 
-          <div className="relative h-28 max-w-[350px] w-full mt- mb-8">
+          <div className="relative h-28 max-w-[350px] w-full mt-19 mb-8">
 
             {locations.map((loc, i) => (
               <div
