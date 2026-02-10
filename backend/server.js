@@ -77,7 +77,7 @@ VendorBusiness.belongsTo(Vendor, {
 // ================= ROUTES =================
 app.use("/api/auth", authRoutes)
 app.use("/api/vendor", vendorRoutes)
-app.use("/api/admin", adminRoutes) // 🔥🔥 THIS WAS MISSING
+app.use("/api/admin", adminRoutes)
 
 // 🔥🔥 SAFETY CHECK (IMPORTANT)
 if (typeof bookingRoutes !== "function") {
@@ -106,14 +106,21 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal Server Error" })
 })
 
-// ================= DB =================
-sequelize
-  .sync({
-    alter: true,
-    logging: console.log,
-  })
-  .then(() => console.log("✅ MySQL Connected & Tables Synced"))
-  .catch((err) => console.error("❌ DB SYNC ERROR:", err))
+// ================= DB (UPDATED – SAFE) =================
+;(async () => {
+  try {
+    await sequelize.authenticate()
+    console.log("✅ MySQL connection authenticated")
+
+    await sequelize.sync({
+      alter: true,
+      logging: console.log,
+    })
+    console.log("✅ MySQL Connected & Tables Synced")
+  } catch (err) {
+    console.error("❌ DB SYNC ERROR:", err)
+  }
+})()
 
 // ================= START =================
 const PORT = process.env.PORT || 5000
