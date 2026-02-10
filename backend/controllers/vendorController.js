@@ -166,6 +166,41 @@ exports.updateVendorProfile = async (req, res) => {
 }
 
 // ==========================================================
+// 🆕 UPDATE VENDOR ACCOUNT (ACCOUNT SETTINGS)
+// ==========================================================
+exports.updateVendorAccount = async (req, res) => {
+  try {
+    const { name, phone, image, password } = req.body
+
+    const vendor = await Vendor.findByPk(req.user.id)
+    if (!vendor) {
+      return res.status(404).json({ message: "Vendor not found" })
+    }
+
+    // BASIC DETAILS
+    if (name !== undefined) vendor.name = name
+    if (phone !== undefined) vendor.phone = phone
+    if (image !== undefined) vendor.image = image
+
+    // PASSWORD (OPTIONAL)
+    if (password && password.length >= 6) {
+      vendor.password = await bcrypt.hash(password, 10)
+    }
+
+    await vendor.save()
+
+    res.json({
+      success: true,
+      message: "Account settings updated successfully",
+      vendor,
+    })
+  } catch (err) {
+    console.error("UPDATE VENDOR ACCOUNT ERROR:", err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// ==========================================================
 // 🆕 ADMIN: HARD DELETE VENDOR (SAFE + CASCADE)
 // ==========================================================
 exports.adminDeleteVendor = async (req, res) => {
@@ -179,23 +214,19 @@ exports.adminDeleteVendor = async (req, res) => {
       return res.status(404).json({ message: "Vendor not found" })
     }
 
-    console.log("🗑️ Admin deleting vendor:", vendor.id, vendor.email)
-
-    // 🔥 Delete vendor businesses
+    // Delete vendor businesses
     await VendorBusiness.destroy({
       where: { vendor_id: vendor.id },
       transaction: t,
     })
 
-    // 🔥 Delete vendor bookings
+    // Delete vendor bookings
     await Booking.destroy({
       where: { vendor_id: vendor.id },
       transaction: t,
     })
 
-    // 🔥 Delete vendor itself
     await vendor.destroy({ transaction: t })
-
     await t.commit()
 
     res.json({
@@ -209,9 +240,7 @@ exports.adminDeleteVendor = async (req, res) => {
   }
 }
 
-// ==========================================================
-// 🆕 GET BOOKINGS FOR LOGGED-IN VENDOR (🔥 MAIN FIX)
-// ==========================================================
+// ================= GET BOOKINGS FOR LOGGED-IN VENDOR =================
 exports.getVendorBookings = async (req, res) => {
   try {
     const vendorId = req.user.id
@@ -296,10 +325,7 @@ exports.saveVendorBusiness = async (req, res) => {
 exports.getPendingBusinesses = async (req, res) => {
   try {
     const list = await VendorBusiness.findAll({
-      where: {
-        approved: false,
-        status: "pending",
-      },
+      where: { approved: false, status: "pending" },
       include: [{ model: Vendor, attributes: ["id", "name", "email"] }],
       order: [["createdAt", "DESC"]],
     })

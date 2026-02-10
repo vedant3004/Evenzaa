@@ -62,6 +62,14 @@ router.put(
   vendorController.updateVendorProfile
 )
 
+// 🆕 ✅ UPDATE VENDOR ACCOUNT SETTINGS (NEW – DO NOT REMOVE)
+router.put(
+  "/account",
+  verifyToken,
+  isVendor,
+  vendorController.updateVendorAccount
+)
+
 // 🔥 SAVE BUSINESS (MULTIPLE BUSINESSES SUPPORTED)
 router.put(
   "/business",

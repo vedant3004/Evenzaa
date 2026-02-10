@@ -25,6 +25,7 @@ const Vendor = sequelize.define(
     phone: {
       type: DataTypes.STRING,
       allowNull: true,
+      comment: "Vendor contact number (Account Settings)",
     },
 
     city: {
@@ -46,6 +47,7 @@ const Vendor = sequelize.define(
     services: {
       type: DataTypes.JSON,
       allowNull: true,
+      comment: "List of services provided by vendor",
     },
 
     price: {
@@ -56,6 +58,7 @@ const Vendor = sequelize.define(
     image: {
       type: DataTypes.STRING,
       allowNull: true,
+      comment: "Profile / business image URL",
     },
 
     rating: {
@@ -80,18 +83,18 @@ const Vendor = sequelize.define(
       defaultValue: "vendor",
     },
 
-    // ================= ADDED (SAFE – FUTURE USE) =================
+    // ================= DASHBOARD STATS =================
 
-    // 🔹 Total bookings count (optional dashboard stat)
     total_bookings: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
+      comment: "Cached total bookings count",
     },
 
-    // 🔹 Total earnings snapshot (safe, optional)
     total_earnings: {
       type: DataTypes.FLOAT,
       defaultValue: 0,
+      comment: "Cached total earnings snapshot",
     },
   },
   {
@@ -99,27 +102,34 @@ const Vendor = sequelize.define(
     timestamps: true,
 
     // =================================================
-    // ============ ADMIN DELETE SAFETY (🆕) ============
+    // ============ DEBUG + SAFETY HOOKS (🆕) ============
     // =================================================
-
     hooks: {
-      beforeDestroy: async (vendor, options) => {
+      beforeUpdate: async (vendor) => {
+        console.log("✏️ Vendor BEFORE UPDATE:", {
+          id: vendor.id,
+          name: vendor.name,
+          phone: vendor.phone,
+          image: vendor.image,
+        })
+      },
+
+      afterUpdate: async (vendor) => {
+        console.log("✅ Vendor AFTER UPDATE (DB SAVED):", {
+          id: vendor.id,
+          name: vendor.name,
+          phone: vendor.phone,
+          image: vendor.image,
+        })
+      },
+
+      beforeDestroy: async (vendor) => {
         try {
           console.log(
             "🗑️ Admin deleting vendor safely:",
             vendor.id,
             vendor.email
           )
-
-          // 🔒 Future-proof:
-          // Yahan future me add kar sakte ho:
-          // - delete vendor businesses
-          // - delete vendor products
-          // - delete vendor bookings
-
-          // Example (future):
-          // await Business.destroy({ where: { vendorId: vendor.id } })
-
         } catch (err) {
           console.error("❌ Vendor beforeDestroy hook error:", err)
           throw err
