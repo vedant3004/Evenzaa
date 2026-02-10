@@ -32,7 +32,7 @@ router.post("/", verifyToken, async (req, res) => {
       })
     }
 
-    // 🔍 Find vendor business (to get vendor_id)
+    // 🔍 Find vendor business
     const business = await VendorBusiness.findByPk(vendor_business_id)
 
     if (!business) {
@@ -69,6 +69,55 @@ router.post("/", verifyToken, async (req, res) => {
     })
   } catch (err) {
     console.error("❌ CREATE BOOKING ERROR:", err)
+    res.status(500).json({ message: "Server error" })
+  }
+})
+
+// =====================================================
+// 🆕 USER: UPDATE BOOKING ADDRESS (EDIT ADDRESS)
+// PUT /api/bookings/:id
+// =====================================================
+router.put("/:id", verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params
+    const {
+      customer_name,
+      customer_phone,
+      customer_address,
+    } = req.body
+
+    const booking = await Booking.findByPk(id)
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found",
+      })
+    }
+
+    // 🔒 Security: only owner can update
+    if (booking.user_id !== req.user.id) {
+      return res.status(403).json({
+        message: "Unauthorized",
+      })
+    }
+
+    booking.customer_name =
+      customer_name || booking.customer_name
+    booking.customer_phone =
+      customer_phone || booking.customer_phone
+    booking.customer_address =
+      customer_address || booking.customer_address
+
+    await booking.save()
+
+    console.log("✏️ BOOKING ADDRESS UPDATED:", booking.id)
+
+    res.json({
+      message: "Booking address updated successfully",
+      booking,
+    })
+  } catch (err) {
+    console.error("❌ UPDATE ADDRESS ERROR:", err)
     res.status(500).json({ message: "Server error" })
   }
 })
@@ -119,7 +168,8 @@ router.put("/:id/pay", verifyToken, async (req, res) => {
 
     booking.status = "paid"
     booking.amount = amount || booking.amount
-    booking.payment_method = payment_method || booking.payment_method
+    booking.payment_method =
+      payment_method || booking.payment_method
     booking.payment_status = "paid"
 
     await booking.save()
