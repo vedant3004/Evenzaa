@@ -106,19 +106,28 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal Server Error" })
 })
 
-// ================= DB (UPDATED – SAFE) =================
+// ================= DB (SAFE MODE – UPDATED) =================
 ;(async () => {
   try {
+    // ✅ ONLY AUTHENTICATE (SAFE FOR PRODUCTION)
     await sequelize.authenticate()
     console.log("✅ MySQL connection authenticated")
 
+    /**
+     * ❌ DANGEROUS IN EXISTING DB
+     * Keeping this commented for safety.
+     * Use ONLY when you intentionally change schema.
+     */
+    /*
     await sequelize.sync({
       alter: true,
       logging: console.log,
     })
     console.log("✅ MySQL Connected & Tables Synced")
+    */
+
   } catch (err) {
-    console.error("❌ DB SYNC ERROR:", err)
+    console.error("❌ DB CONNECTION ERROR:", err)
   }
 })()
 

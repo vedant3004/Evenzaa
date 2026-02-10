@@ -16,10 +16,13 @@ const sequelize = new Sequelize(
 // 🆕 AUTO DB SYNC (DEV MODE ONLY)
 // ==================================================
 // Ye ensure karega ki:
-// - Vendor model ke naye fields (phone, image, etc.)
-// - Database table me actually exist kare
+// - DB connection working hai
 //
-// ⚠️ Production me { alter: true } avoid karna
+// ⚠️ IMPORTANT:
+// - Existing database ke sath { alter: true }
+//   MySQL me index explosion karta hai
+// - Isliye sync DISABLED rakha gaya hai
+// - Schema changes ke liye migrations use karo
 // ==================================================
 
 const syncDatabase = async () => {
@@ -27,14 +30,18 @@ const syncDatabase = async () => {
     await sequelize.authenticate()
     console.log("✅ Database connection established successfully.")
 
+    // ❌ DISABLED: Causes "Too many keys" error
+    /*
     await sequelize.sync({ alter: true })
     console.log("✅ Database synced with models (ALTER mode).")
+    */
+
   } catch (error) {
-    console.error("❌ Database connection / sync failed:", error)
+    console.error("❌ Database connection failed:", error)
   }
 }
 
-// 🔥 Immediately sync on startup (safe for dev)
+// 🔥 Authenticate only (SAFE)
 syncDatabase()
 
 module.exports = sequelize
