@@ -447,6 +447,7 @@ const [salesData, setSalesData] = useState([])
 
         {/* ACCOUNT PANEL (NOT REMOVED 🔥) */}
         {activePanel === "account" && (
+          
           <div className="bg-[#111827] border border-[#1F2937] p-8 rounded-2xl max-w-2xl">
             <h2 className="text-2xl font-bold text-white mb-4">Account Settings</h2>
 
@@ -460,6 +461,7 @@ const [salesData, setSalesData] = useState([])
             <Input label="Change Password" type="password"
               value={accountForm.password}
               onChange={v => setAccountForm({ ...accountForm, password: v })} />
+              
           </div>
         )}
 
