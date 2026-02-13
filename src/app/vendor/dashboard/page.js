@@ -446,6 +446,84 @@ const [salesData, setSalesData] = useState([])
 
 
         {/* ACCOUNT PANEL (NOT REMOVED 🔥) */}
+        {/* ================= BOOKINGS PANEL ================= */}
+{activePanel === "bookings" && (
+  <div className="bg-[#111827] border border-[#1F2937] 
+                  p-8 rounded-2xl mt-6">
+
+    <h2 className="text-2xl font-bold text-white mb-6">
+      Customer Bookings
+    </h2>
+
+    {bookingLoading ? (
+      <p className="text-gray-400">Loading bookings...</p>
+    ) : bookings.length === 0 ? (
+      <p className="text-gray-400">No bookings yet.</p>
+    ) : (
+      <div className="space-y-4">
+
+       {bookings.map((b) => {
+
+  const bookingDate = new Date(b.createdAt)
+
+  const formattedDate = bookingDate.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
+
+  const formattedTime = bookingDate.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+
+  return (
+    <div
+      key={b.id}
+      className="bg-[#0F172A] border border-[#1F2937] 
+                 p-6 rounded-xl"
+    >
+
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-lg font-semibold text-white">
+          {b.customer_name || "Customer"}
+        </h3>
+        <span className="text-green-400 font-bold">
+          ₹{b.amount}
+        </span>
+      </div>
+
+      <p className="text-gray-400 text-sm">
+        📞 {b.customer_phone || "N/A"}
+      </p>
+
+      <p className="text-gray-400 text-sm">
+        📍 {b.customer_address || "No address provided"}
+      </p>
+
+      {/* 🔥 NEW DATE + TIME SECTION */}
+      <p className="text-cyan-400 text-sm mt-3">
+        📅 {formattedDate}
+      </p>
+
+      <p className="text-yellow-400 text-sm">
+        ⏰ {formattedTime}
+      </p>
+
+      <p className="text-xs text-gray-500 mt-3">
+        Status: {b.status} | Payment: {b.payment_status}
+      </p>
+
+    </div>
+  )
+})}
+
+
+      </div>
+    )}
+  </div>
+)}
+
         {activePanel === "account" && (
           
           <div className="bg-[#111827] border border-[#1F2937] p-8 rounded-2xl max-w-2xl">

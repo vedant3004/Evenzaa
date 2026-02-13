@@ -102,16 +102,16 @@ export default function BookingPage() {
           "Content-Type": "application/json",
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify({
-          vendorId: vendor.vendorId,
-          vendorName: vendor.name,
-          service: vendor.service,
-          price: vendor.price,
-          address: `${form.address}, ${form.city}`,
-          vendor_business_id: vendor.id,
-          customer_name: form.name,
-          customer_phone: form.phone,
-        }),
+       body: JSON.stringify({
+  vendor_business_id: vendor.id,
+  vendor_name: vendor.name,
+  service: vendor.service,
+  price: vendor.price,
+  customer_name: form.name,
+  customer_phone: form.phone,
+  customer_address: `${form.address}, ${form.city}`,
+}),
+
       })
 
       const data = await res.json()
@@ -135,10 +135,11 @@ export default function BookingPage() {
           ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
-          address: `${form.address}, ${form.city}`,
-          customer_name: form.name,
-          customer_phone: form.phone,
-        }),
+  customer_name: form.name,
+  customer_phone: form.phone,
+  customer_address: `${form.address}, ${form.city}`,
+}),
+
       })
     } catch (err) {
       console.error("Address update failed", err)
