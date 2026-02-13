@@ -461,6 +461,20 @@ const [salesData, setSalesData] = useState([])
             <Input label="Change Password" type="password"
               value={accountForm.password}
               onChange={v => setAccountForm({ ...accountForm, password: v })} />
+              <button
+  onClick={saveAccountSettings}
+  disabled={accountSaving}
+  className="w-full mt-6 bg-blue-600 hover:bg-blue-700 
+             text-white py-3 rounded-xl font-semibold transition"
+>
+  {accountSaving ? "Saving..." : "Save Changes"}
+</button>
+
+{accountMsg && (
+  <p className="mt-4 text-sm text-green-400">
+    {accountMsg}
+  </p>
+)}
               
           </div>
         )}
