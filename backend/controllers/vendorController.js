@@ -416,25 +416,19 @@ exports.rejectBusiness = async (req, res) => {
 // ================= PUBLIC: GET APPROVED BUSINESSES =================
 exports.getPublicBusinesses = async (req, res) => {
   try {
-    const { category } = req.query
-
-    const whereClause = { approved: true }
-
-    if (category) {
-      whereClause.category = category
-    }
-
     const list = await VendorBusiness.findAll({
-      where: whereClause,
-      order: [["createdAt", "DESC"]],
+      where: { approved: true },
+      order: [["rating", "DESC"]], // 🔥 highest rating first
+      limit: 4 // 🔥 only top 4
     })
 
     res.json(list)
   } catch (err) {
-    console.error(err)
+    console.error("GET PUBLIC BUSINESSES ERROR:", err)
     res.status(500).json({ message: "Server error" })
   }
 }
+
 
 // ================= PUBLIC: GET BUSINESS BY SLUG =================
 // ================= PUBLIC: GET BUSINESS BY SLUG =================

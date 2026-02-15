@@ -2,13 +2,37 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import vendors from "../data/vendors"
 import { motion } from "framer-motion"
+import { useEffect, useState } from "react"
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 export default function FeaturedVendors() {
-  const topVendors = [...vendors]
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 4)
+  const [vendors, setVendors] = useState([])
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/vendor/businesses`)
+        const data = await res.json()
+
+        // ✅ Only approved vendors
+        const approved = data.filter(v => v.approved === true)
+
+        // ✅ Sort by rating DESC
+        const top = [...approved]
+          .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+          .slice(0, 4)
+
+        setVendors(top)
+      } catch (err) {
+        console.error("Featured fetch error:", err)
+      }
+    }
+
+    fetchFeatured()
+  }, [])
 
   return (
     <motion.section
@@ -28,49 +52,39 @@ export default function FeaturedVendors() {
       </motion.h2>
 
       <p className="text-[#9CA3AF] mb-14 max-w-2xl mx-auto">
-        Handpicked professionals trusted for weddings, corporate events and celebrations.
+        Top rated professionals trusted for events.
       </p>
 
       <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0.2 } }
-        }}
         className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto px-4"
       >
-        {topVendors.map((v) => (
+        {vendors.map((v) => (
           <motion.div
             key={v.id}
-            variants={{
-              hidden: { opacity: 0, scale: 0.9 },
-              visible: { opacity: 1, scale: 1 }
-            }}
             whileHover={{ y: -10 }}
             transition={{ duration: 0.4 }}
             className="group bg-[#111827] rounded-2xl shadow-lg overflow-hidden border border-[#1F2937]"
           >
             <div className="relative h-48 overflow-hidden">
               <Image
-                src={v.image}
+                src={v.image || "/placeholder.jpg"}
                 fill
-                alt={v.name}
+                alt={v.business_name}
                 className="object-cover transition duration-500 group-hover:scale-110"
+                unoptimized
               />
               <span className="absolute top-3 left-3 bg-[#2563EB] text-white text-xs px-3 py-1 rounded-full">
-                {v.service}
+                {v.category}
               </span>
             </div>
 
             <div className="p-6 text-left">
               <h3 className="font-bold text-lg mb-1 text-white">
-                {v.name}
+                {v.business_name}
               </h3>
 
               <p className="text-sm text-[#9CA3AF] mb-4">
-                ⭐ {v.rating} Rating
+                ⭐ {v.rating || 4.5} Rating
               </p>
 
               <Link
@@ -84,6 +98,7 @@ export default function FeaturedVendors() {
         ))}
       </motion.div>
 
+      {/* ✅ View All Vendors Button */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
