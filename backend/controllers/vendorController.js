@@ -416,10 +416,17 @@ exports.rejectBusiness = async (req, res) => {
 // ================= PUBLIC: GET APPROVED BUSINESSES =================
 exports.getPublicBusinesses = async (req, res) => {
   try {
+    const { category } = req.query
+
+    const whereClause = { approved: true }
+
+    if (category) {
+      whereClause.category = category
+    }
+
     const list = await VendorBusiness.findAll({
-      where: { approved: true },
+      where: whereClause,
       order: [["createdAt", "DESC"]],
-      include: [{ model: Vendor, attributes: ["id", "name", "email"] }],
     })
 
     res.json(list)

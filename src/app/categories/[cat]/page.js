@@ -1,14 +1,31 @@
 "use client"
-import vendors from "../../../data/vendors"
-import { useParams, useRouter } from "next/navigation"
+
+import { useParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import Link from "next/link"
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 export default function CategoryPage() {
   const { cat } = useParams()
-  const router = useRouter()
+  const [vendors, setVendors] = useState([])
 
-  const list = vendors.filter(
-    v => v.category.toLowerCase() === cat.toLowerCase()
-  )
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/vendor/businesses?category=${cat}`
+        )
+        const data = await res.json()
+        setVendors(data)
+      } catch (err) {
+        console.error("Vendor fetch error:", err)
+      }
+    }
+
+    if (cat) fetchVendors()
+  }, [cat])
 
   return (
     <div className="pt-28 max-w-7xl mx-auto px-4 bg-[#0B1120] min-h-screen">
@@ -18,7 +35,13 @@ export default function CategoryPage() {
       </h1>
 
       <div className="grid md:grid-cols-3 gap-6">
-        {list.map(v => (
+        {vendors.length === 0 && (
+          <p className="text-gray-400">
+            No vendors found in this category.
+          </p>
+        )}
+
+        {vendors.map(v => (
           <div
             key={v.id}
             className="bg-[#111827] p-6 rounded-xl shadow border border-[#1F2937]"
@@ -29,19 +52,19 @@ export default function CategoryPage() {
             />
 
             <h3 className="font-bold text-white">
-              {v.name}
+              {v.business_name}
             </h3>
 
             <p className="text-[#9CA3AF] mt-1">
-              {v.desc}
+              {v.description}
             </p>
 
-            <button
-              onClick={() => router.push(`/vendors/${v.slug}`)}
-              className="btn-primary w-full mt-4"
+            <Link
+              href={`/vendors/${v.slug}`}
+              className="btn-primary w-full mt-4 block text-center"
             >
               View Details
-            </button>
+            </Link>
           </div>
         ))}
       </div>
