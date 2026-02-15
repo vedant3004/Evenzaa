@@ -8,19 +8,51 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 export default function CategoryPage() {
-  const { cat } = useParams()
+  const params = useParams()
+
+  // 🔥 category decode + formatting
+  const cat = params?.cat
+  ? decodeURIComponent(params.cat)
+  : ""
+
+
   const [vendors, setVendors] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchVendors = async () => {
       try {
+        setLoading(true)
+
+        console.log("Fetching category:", cat)
+
+        // ✅ CORRECT API (FILTERED)
         const res = await fetch(
-          `${API_BASE}/api/vendor/businesses?category=${cat}`
+          `${API_BASE}/api/vendor/category/${cat}`,
+          { cache: "no-store" }
         )
+
+        if (!res.ok) {
+          console.error("API ERROR:", res.status)
+          setVendors([])
+          return
+        }
+
         const data = await res.json()
+
+        if (!Array.isArray(data)) {
+          console.error("Invalid response:", data)
+          setVendors([])
+          return
+        }
+
         setVendors(data)
+
       } catch (err) {
         console.error("Vendor fetch error:", err)
+        setVendors([])
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -34,8 +66,16 @@ export default function CategoryPage() {
         {cat} Vendors
       </h1>
 
+      {/* 🔄 Loading */}
+      {loading && (
+        <p className="text-gray-400">
+          Loading vendors...
+        </p>
+      )}
+
       <div className="grid md:grid-cols-3 gap-6">
-        {vendors.length === 0 && (
+
+        {!loading && vendors.length === 0 && (
           <p className="text-gray-400">
             No vendors found in this category.
           </p>
@@ -44,18 +84,19 @@ export default function CategoryPage() {
         {vendors.map(v => (
           <div
             key={v.id}
-            className="bg-[#111827] p-6 rounded-xl shadow border border-[#1F2937]"
+            className="bg-[#111827] p-6 rounded-xl shadow border border-[#1F2937] hover:border-blue-500 transition"
           >
             <img
-              src={v.image}
+              src={v.image || "/placeholder.jpg"}
               className="h-48 w-full object-cover rounded mb-4"
+              alt={v.business_name}
             />
 
             <h3 className="font-bold text-white">
               {v.business_name}
             </h3>
 
-            <p className="text-[#9CA3AF] mt-1">
+            <p className="text-[#9CA3AF] mt-1 line-clamp-2">
               {v.description}
             </p>
 

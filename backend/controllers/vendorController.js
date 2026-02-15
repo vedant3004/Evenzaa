@@ -418,8 +418,8 @@ exports.getPublicBusinesses = async (req, res) => {
   try {
     const list = await VendorBusiness.findAll({
       where: { approved: true },
-      order: [["rating", "DESC"]], // 🔥 highest rating first
-      limit: 4 // 🔥 only top 4
+order: [["createdAt", "DESC"]],
+limit: 4,
     })
 
     res.json(list)
@@ -522,5 +522,26 @@ console.log("Business ID:", req.params.id)
   } catch (err) {
     console.error("PAYMENT ERROR:", err)
     res.status(500).json({ message: "Payment failed" })
+  }
+}
+// ================= PUBLIC: GET BUSINESSES BY CATEGORY =================
+exports.getBusinessesByCategory = async (req, res) => {
+  try {
+    const { category } = req.params
+
+    console.log("CATEGORY REQUEST:", category)
+
+    const list = await VendorBusiness.findAll({
+      where: {
+        approved: true,
+        category: category,
+      },
+      order: [["createdAt", "DESC"]],
+    })
+
+    res.json(list)
+  } catch (err) {
+    console.error("GET BY CATEGORY ERROR:", err)
+    res.status(500).json({ message: "Server error" })
   }
 }

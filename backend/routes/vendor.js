@@ -123,5 +123,17 @@ router.get(
 // =================================================
 // ADMIN HARD DELETE PLACEHOLDER
 // =================================================
+// SINGLE BUSINESS BY SLUG
+router.get(
+  "/businesses/:slug",
+  vendorController.getBusinessBySlug
+)
+
+// ================= PUBLIC: BUSINESSES BY CATEGORY =================
+router.get(
+  "/category/:category",
+  vendorController.getBusinessesByCategory
+)
 
 module.exports = router
+
