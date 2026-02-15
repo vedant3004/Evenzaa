@@ -430,6 +430,7 @@ exports.getPublicBusinesses = async (req, res) => {
 }
 
 // ================= PUBLIC: GET BUSINESS BY SLUG =================
+// ================= PUBLIC: GET BUSINESS BY SLUG =================
 exports.getBusinessBySlug = async (req, res) => {
   try {
     const business = await VendorBusiness.findOne({
@@ -441,23 +442,27 @@ exports.getBusinessBySlug = async (req, res) => {
       return res.status(404).json({ message: "Business not found" })
     }
 
-    // ✅ Services always send as array
     const businessData = business.toJSON()
 
-    res.json({
-      ...businessData,
-      services: Array.isArray(businessData.services)
-        ? businessData.services
-        : businessData.services
-          ? JSON.parse(businessData.services)
-          : []
-    })
+    // ✅ FIX: Convert services properly
+    if (Array.isArray(businessData.services)) {
+      // already correct
+    } else if (typeof businessData.services === "string") {
+      businessData.services = businessData.services
+        .split(",")
+        .map(s => s.trim())
+    } else {
+      businessData.services = []
+    }
+
+    res.json(businessData)
 
   } catch (err) {
-    console.error(err)
+    console.error("GET BUSINESS BY SLUG ERROR:", err)
     res.status(500).json({ message: "Server error" })
   }
 }
+
 
 // ================= GET BUSINESS BY ID (FOR PAYMENT PAGE) =================
 exports.getBusinessById = async (req, res) => {
