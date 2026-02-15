@@ -64,7 +64,16 @@ Booking.hasOne(Payment, {
   onDelete: "CASCADE",
 })
 Payment.belongsTo(Booking, { foreignKey: "booking_id" })
+// 🔥 Vendor → Payment
+Vendor.hasMany(Payment, {
+  foreignKey: "vendor_id",
+  onDelete: "CASCADE",
+})
+Payment.belongsTo(Vendor, {
+  foreignKey: "vendor_id",
+})
 
+// 🔥 VendorBusiness → Payment
 // 🔥 Vendor → VendorBusiness (MULTIPLE)
 Vendor.hasMany(VendorBusiness, {
   foreignKey: "vendor_id",
@@ -73,6 +82,20 @@ Vendor.hasMany(VendorBusiness, {
 VendorBusiness.belongsTo(Vendor, {
   foreignKey: "vendor_id",
 })
+VendorBusiness.belongsTo(Vendor, {
+  foreignKey: "vendor_id",
+})
+
+VendorBusiness.hasMany(Payment, {
+  foreignKey: "business_id",
+  onDelete: "CASCADE",
+})
+Payment.belongsTo(VendorBusiness, {
+  foreignKey: "business_id",
+})
+
+
+
 
 // ================= ROUTES =================
 app.use("/api/auth", authRoutes)
@@ -118,13 +141,13 @@ app.use((err, req, res, next) => {
      * Keeping this commented for safety.
      * Use ONLY when you intentionally change schema.
      */
-    /*
+    
     await sequelize.sync({
       alter: true,
       logging: console.log,
     })
     console.log("✅ MySQL Connected & Tables Synced")
-    */
+    
 
   } catch (err) {
     console.error("❌ DB CONNECTION ERROR:", err)

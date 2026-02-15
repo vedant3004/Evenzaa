@@ -5,7 +5,7 @@ const router = express.Router()
 const {
   verifyToken,
   isVendor,
-  isAdmin, // ✅ ADD
+  isAdmin,
 } = require("../middleware/authMiddleware")
 
 const vendorController = require("../controllers/vendorController")
@@ -62,7 +62,7 @@ router.put(
   vendorController.updateVendorProfile
 )
 
-// 🆕 ✅ UPDATE VENDOR ACCOUNT SETTINGS (NEW – DO NOT REMOVE)
+// 🆕 ✅ UPDATE VENDOR ACCOUNT SETTINGS
 router.put(
   "/account",
   verifyToken,
@@ -70,7 +70,7 @@ router.put(
   vendorController.updateVendorAccount
 )
 
-// 🔥 SAVE BUSINESS (MULTIPLE BUSINESSES SUPPORTED)
+// 🔥 SAVE BUSINESS
 router.put(
   "/business",
   verifyToken,
@@ -78,12 +78,18 @@ router.put(
   vendorController.saveVendorBusiness
 )
 
+// 🔥 PROCESS PAYMENT (NEW – ADDED ONLY)
+router.post(
+  "/pay/:id",
+  verifyToken,
+  isVendor,
+  vendorController.processPayment
+)
+
 // =================================================
-// 🆕 🔥 VENDOR BOOKINGS (NEW – DO NOT REMOVE)
+// 🆕 🔥 VENDOR BOOKINGS
 // =================================================
 
-// ✅ GET BOOKINGS FOR LOGGED-IN VENDOR
-// GET /api/vendor/bookings
 router.get(
   "/bookings",
   verifyToken,
@@ -92,26 +98,30 @@ router.get(
 )
 
 // =================================================
-// 🌍 PUBLIC APIs (NO AUTH)
+// 🌍 PUBLIC APIs
 // =================================================
+// 🔥 GET SINGLE BUSINESS BY ID (FOR PAYMENT PAGE)
+router.get(
+  "/business/:id",
+  verifyToken,
+  isVendor,
+  vendorController.getBusinessById
+)
 
-// 🔥 Vendors page → ALL APPROVED BUSINESSES
+// ALL APPROVED BUSINESSES
 router.get(
   "/businesses",
   vendorController.getPublicBusinesses
 )
 
-// 🔥 Vendor slug page → SINGLE BUSINESS
+// SINGLE BUSINESS BY SLUG
 router.get(
   "/businesses/:slug",
   vendorController.getBusinessBySlug
 )
 
 // =================================================
-// 🆕 ADMIN HARD DELETE (SAFE PLACEHOLDER)
+// ADMIN HARD DELETE PLACEHOLDER
 // =================================================
-
-// ❌ Vendor delete handled ONLY via /api/admin/vendor/:id
-// (intentionally not exposing delete here for safety)
 
 module.exports = router

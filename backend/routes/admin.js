@@ -10,8 +10,12 @@ const {
 // 🔥 Admin login controller (JWT generator)
 const {
   adminLogin,
-  deleteVendorByAdmin, // 🆕 ADDED
+  deleteVendorByAdmin,
+  getAllPayments,   // 🔥 ADD THIS
 } = require("../controllers/adminController")
+
+
+
 
 const { verifyToken, isAdmin } = require("../middleware/authMiddleware")
 
@@ -25,6 +29,7 @@ router.post(
   "/login",
   adminLogin
 )
+
 
 // =================================================
 // ============ ADMIN BUSINESS APPROVAL ============
@@ -104,6 +109,25 @@ router.delete(
       return await deleteVendorByAdmin(req, res)
     } catch (err) {
       console.error("❌ Delete vendor route error:", err)
+      next(err)
+    }
+  }
+)
+// =================================================
+// ============ ADMIN REVENUE ======================
+// =================================================
+
+// GET /api/admin/payments
+router.get(
+  "/payments",
+  verifyToken,
+  isAdmin,
+  async (req, res, next) => {
+    try {
+      console.log("💰 Admin fetching payments")
+      return await getAllPayments(req, res)
+    } catch (err) {
+      console.error("❌ Admin payment route error:", err)
       next(err)
     }
   }

@@ -39,10 +39,10 @@ export default function AdminDash() {
   const [view, setView] = useState("vendors")
   const [admin, setAdmin] = useState(false)
 
-  const totalSales = localVendors.reduce(
-    (sum, v) => sum + (v.sales || 0),
-    0
-  )
+  const [payments, setPayments] = useState([])
+const [revenueView, setRevenueView] = useState(false)
+const [totalRevenue, setTotalRevenue] = useState(0)
+
 
   // 🔐 ADMIN GUARD
   useEffect(() => {
@@ -78,6 +78,42 @@ export default function AdminDash() {
   useEffect(() => {
     fetchVendors()
   }, [])
+
+  useEffect(() => {
+  fetchPayments()
+}, [])
+
+
+  // ================= FETCH PAYMENTS =================
+const fetchPayments = async () => {
+  try {
+    const token = localStorage.getItem("evenzaa_admin")
+    if (!isValidJWT(token)) return
+
+    const res = await fetch(`${ADMIN_API}/payments`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    const data = await res.json()
+
+    if (Array.isArray(data)) {
+      setPayments(data)
+
+      const total = data.reduce(
+        (sum, p) => sum + (p.amount || 0),
+        0
+      )
+
+      setTotalRevenue(total)
+    }
+
+  } catch (err) {
+    console.error("❌ Payment fetch error:", err)
+  }
+}
+
 
   // ================= FETCH USERS =================
   useEffect(() => {
@@ -225,7 +261,17 @@ export default function AdminDash() {
           <Stat icon={<Briefcase />} label="Pending Businesses"
             value={businesses.length}
             onClick={() => setView("businesses")} />
-          <Stat icon={<Wallet />} label="Revenue" value={`₹${totalSales}`} />
+          <Stat
+  icon={<Wallet />}
+  label="Revenue"
+  value={`₹${totalRevenue}`}
+ onClick={() => {
+  setView("")
+  setRevenueView(true)
+}}
+
+/>
+
         </div>
 
         {/* ================= CONTENT ================= */}
@@ -365,6 +411,47 @@ export default function AdminDash() {
               )}
             </>
           )}
+          {/* ===== REVENUE VIEW ===== */}
+{revenueView && (
+  <>
+    <h2 className="text-2xl font-bold mb-6 text-white">
+      Platform Revenue
+    </h2>
+
+    <div className="bg-[#0F172A] p-6 rounded-xl mb-6">
+      <p className="text-gray-400">Total Revenue</p>
+      <h3 className="text-3xl font-bold text-green-400">
+        ₹{totalRevenue}
+      </h3>
+    </div>
+
+    <table className="w-full text-left">
+      <thead>
+        <tr className="border-b border-[#1F2937] text-[#9CA3AF]">
+          <th>Vendor ID</th>
+          <th>Plan</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {payments.map(p => (
+          <tr key={p.id} className="border-b border-[#1F2937]">
+            <td className="py-3 text-white">{p.vendor_id}</td>
+            <td className="text-white">{p.plan}</td>
+            <td className="text-green-400">₹{p.amount}</td>
+            <td className="text-yellow-400">{p.payment_status}</td>
+            <td className="text-gray-400">
+              {new Date(p.createdAt).toLocaleDateString("en-IN")}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </>
+)}
+
         </div>
       </div>
     </div>

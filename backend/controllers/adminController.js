@@ -1,3 +1,6 @@
+const Payment = require("../models/Payment")
+const VendorBusiness = require("../models/VendorBusiness")
+
 const jwt = require("jsonwebtoken")
 
 // 🆕 Vendor model import (ADD ONLY)
@@ -83,3 +86,61 @@ exports.deleteVendorByAdmin = async (req, res) => {
     })
   }
 }
+// =================================================
+// ============ GET ALL PAYMENTS ===================
+// =================================================
+
+exports.getAllPayments = async (req, res) => {
+  try {
+    const payments = await Payment.findAll({
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: VendorBusiness,
+          attributes: [
+            "business_name",
+            "service_type",
+            "category",
+          ],
+        },
+      ],
+    })
+
+    return res.json(payments)
+  } catch (err) {
+    console.error("❌ ADMIN PAYMENT FETCH ERROR:", err)
+    res.status(500).json({
+      message: "Failed to fetch payments",
+    })
+  }
+}
+
+
+
+// ================= GET ALL PAYMENTS (ADMIN REVENUE) =================
+exports.getAllPayments = async (req, res) => {
+  try {
+
+    const payments = await Payment.findAll({
+      where: { payment_status: "paid" },   // 🔥 only successful payments
+      include: [
+        {
+          model: Vendor,
+          attributes: ["id", "name", "email"],
+        },
+        {
+          model: VendorBusiness,
+          attributes: ["id", "business_name", "city"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    })
+
+    res.json(payments)
+
+  } catch (err) {
+    console.error("GET ALL PAYMENTS ERROR:", err)
+    res.status(500).json({ message: "Failed to fetch payments" })
+  }
+}
+

@@ -63,16 +63,19 @@ const [salesData, setSalesData] = useState([])
   const [accountMsg, setAccountMsg] = useState("")
 
   // BUSINESS (UNCHANGED)
-  const [businessForm, setBusinessForm] = useState({
-    business: "",
-    service_type: "",
-    price: "",
-    city: "",
-    phone: "",
-    image: "",
-    services: "",
-    description: "",
-  })
+const [businessForm, setBusinessForm] = useState({
+  business: "",
+  service_type: "",
+  category: "",
+  price: "",              // booking price (vendor decides)
+  membership_price: 0,    // 🔥 subscription price
+  city: "",
+  phone: "",
+  image: "",
+  services: "",
+  description: "",
+})
+
 
   useEffect(() => {
     if (!user) return
@@ -146,29 +149,64 @@ const [salesData, setSalesData] = useState([])
   ])
 
 }, [bookings])
+// ✅ AUTO PLAN PRICE SET
+useEffect(() => {
+  if (businessForm.service_type === "Bronze") {
+    setBusinessForm(prev => ({
+      ...prev,
+      membership_price: 499,
+    }))
+  }
+
+  if (businessForm.service_type === "Silver") {
+    setBusinessForm(prev => ({
+      ...prev,
+      membership_price: 999,
+    }))
+  }
+
+  if (businessForm.service_type === "Gold") {
+    setBusinessForm(prev => ({
+      ...prev,
+      membership_price: 1999,
+    }))
+  }
+}, [businessForm.service_type])
+
+
+
 
   const saveBusiness = async () => {
-    const token = localStorage.getItem("evenzaa_token")
-    if (!token) return
-    try {
-      setSaving(true)
-      await fetch(`${API_BASE}/api/vendor/business`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(businessForm),
-      })
-      setSuccessMsg("✅ Business saved successfully!")
-      setTimeout(() => setSuccessMsg(""), 3000)
-      allowBusinessOpen(false)
-    } catch {
-      alert("Error saving business")
-    } finally {
-      setSaving(false)
-    }
+  const token = localStorage.getItem("evenzaa_token")
+  if (!token) return
+
+  try {
+    setSaving(true)
+
+    const res = await fetch(`${API_BASE}/api/vendor/business`, {
+  method: "PUT",   // 🔥 IMPORTANT
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify(businessForm),
+})
+
+
+    const data = await res.json()
+
+    // 🔥 redirect to payment page
+    router.push(`/vendor/payment/${data.businessId}`)
+
+  } catch (err) {
+  console.error("SAVE BUSINESS ERROR:", err)
+  alert("Error saving business. Check console.")
+}
+ finally {
+    setSaving(false)
   }
+}
+
 
   const saveAccountSettings = async () => {
     const token = localStorage.getItem("evenzaa_token")
@@ -384,44 +422,106 @@ const [salesData, setSalesData] = useState([])
 {businessOpen && (
   <Modal title="Add / Update Business" onClose={() => allowBusinessOpen(false)}>
     <div className="grid md:grid-cols-2 gap-4">
+
+      {/* BUSINESS NAME */}
       <Input
         label="Business Name"
         value={businessForm.business}
         onChange={v => setBusinessForm({ ...businessForm, business: v })}
       />
-      <Input
-        label="Service Type"
-        value={businessForm.service_type}
-        onChange={v => setBusinessForm({ ...businessForm, service_type: v })}
-      />
-      <Input
-        label="Price"
-        value={businessForm.price}
-        onChange={v => setBusinessForm({ ...businessForm, price: v })}
-      />
+
+      {/* SERVICE TYPE DROPDOWN */}
+      <div>
+        <label className="text-sm text-gray-400">
+          Service Type (Membership Plan)
+        </label>
+        <select
+          value={businessForm.service_type}
+          onChange={(e) =>
+            setBusinessForm({
+              ...businessForm,
+              service_type: e.target.value,
+            })
+          }
+          className="input mt-1 w-full"
+        >
+          <option value="">Select Plan</option>
+          <option value="Bronze">Bronze - ₹499</option>
+          <option value="Silver">Silver - ₹999</option>
+          <option value="Gold">Gold - ₹1999</option>
+        </select>
+      </div>
+
+      {/* CATEGORY DROPDOWN */}
+      <div>
+        <label className="text-sm text-gray-400">
+          Category
+        </label>
+        <select
+          value={businessForm.category}
+          onChange={(e) =>
+            setBusinessForm({
+              ...businessForm,
+              category: e.target.value,
+            })
+          }
+          className="input mt-1 w-full"
+        >
+          <option value="">Select Category</option>
+          <option value="Weddings">Weddings</option>
+          <option value="Corporate">Corporate</option>
+          <option value="Birthday">Birthday</option>
+          <option value="Concerts">Concerts</option>
+          <option value="Conferences">Conferences</option>
+          <option value="Sports">Sports</option>
+        </select>
+      </div>
+
+      {/* PLAN PRICE (AUTO SET - DISABLED) */}
+     <Input
+  label="Membership Price"
+  value={businessForm.membership_price}
+  disabled
+/>
+
+<Input
+  label="Your Service Price (Customer Booking Price)"
+  value={businessForm.price}
+  onChange={v => setBusinessForm({ ...businessForm, price: v })}
+/>
+
+
+      {/* CITY */}
       <Input
         label="City"
         value={businessForm.city}
         onChange={v => setBusinessForm({ ...businessForm, city: v })}
       />
+
+      {/* PHONE */}
       <Input
         label="Phone"
         value={businessForm.phone}
         onChange={v => setBusinessForm({ ...businessForm, phone: v })}
       />
+
+      {/* IMAGE URL */}
       <Input
         label="Image URL"
         value={businessForm.image}
         onChange={v => setBusinessForm({ ...businessForm, image: v })}
       />
+
     </div>
 
+    {/* SERVICES PROVIDED */}
     <Input
       label="Services Provided"
       value={businessForm.services}
       onChange={v => setBusinessForm({ ...businessForm, services: v })}
     />
 
+    {/* DESCRIPTION */}
     <div>
       <label className="text-sm text-gray-400">Description</label>
       <textarea
@@ -434,6 +534,7 @@ const [salesData, setSalesData] = useState([])
       />
     </div>
 
+    {/* SAVE BUTTON */}
     <button
       onClick={saveBusiness}
       disabled={saving}
@@ -441,6 +542,7 @@ const [salesData, setSalesData] = useState([])
     >
       {saving ? "Saving..." : "Save Business"}
     </button>
+
   </Modal>
 )}
 

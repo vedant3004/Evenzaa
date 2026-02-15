@@ -7,6 +7,8 @@ const VendorBusiness = require("../models/VendorBusiness")
 const Booking = require("../models/Booking")
 const User = require("../models/User")
 const sequelize = require("../db") // 🆕 ADDED
+const Payment = require("../models/Payment") // 🔥 ADD THIS LINE
+
 
 // ================= REGISTER VENDOR =================
 exports.registerVendor = async (req, res) => {
@@ -270,16 +272,18 @@ exports.getVendorBookings = async (req, res) => {
 exports.saveVendorBusiness = async (req, res) => {
   try {
     const vendorId = req.user.id
-    const {
-      business,
-      service_type,
-      price,
-      city,
-      phone,
-      image,
-      services,
-      description,
-    } = req.body
+   const {
+  business,
+  service_type,
+  category,
+  price,               // 🔥 SERVICE PRICE
+  membership_price,    // 🔥 PLAN PRICE
+  city,
+  phone,
+  image,
+  services,
+  description,
+} = req.body
 
     if (!business || !service_type || !city) {
       return res.status(400).json({
@@ -295,26 +299,52 @@ exports.saveVendorBusiness = async (req, res) => {
       slug = `${baseSlug}-${count++}`
     }
 
-    const record = await VendorBusiness.create({
-      vendor_id: vendorId,
-      business_name: business,
-      slug,
-      service_type,
-      price,
-      city,
-      phone,
-      image,
-      services,
-      description,
-      approved: false,
-      status: "pending",
-    })
+//    const record = await VendorBusiness.create({
+//   vendor_id: vendorId,
+//   business_name: business,
+//   slug,
+//   service_type,
+//   category, // 🔥 ADDED
+//   price,
+//   membership_price, 
+//   city,
+//   phone,
+//   image,
+//   services,
+//   description,
+//   approved: false,
+//   status: "pending",
+// })
+const record = await VendorBusiness.create({
+  vendor_id: vendorId,
+  business_name: business,
+  slug,
+  service_type,
+  category,
+  price,
+  membership_price,
+  city,
+  phone,
+  image,
+  services: Array.isArray(services)
+    ? services
+    : services
+      ? services.split(",").map(s => s.trim())
+      : [],
+  description,
+  approved: false,
+  status: "pending",
+})
 
-    res.json({
-      success: true,
-      message: "Business saved. Pending admin approval.",
-      business: record,
-    })
+
+
+ res.json({
+  success: true,
+  message: "Business saved. Pending admin approval.",
+  businessId: record.id,   // 🔥 IMPORTANT
+  business: record,
+})
+
   } catch (err) {
     console.error("SAVE BUSINESS ERROR:", err)
     res.status(500).json({ message: "Server error while saving business" })
@@ -411,9 +441,80 @@ exports.getBusinessBySlug = async (req, res) => {
       return res.status(404).json({ message: "Business not found" })
     }
 
-    res.json(business)
+    // ✅ Services always send as array
+    const businessData = business.toJSON()
+
+    res.json({
+      ...businessData,
+      services: Array.isArray(businessData.services)
+        ? businessData.services
+        : businessData.services
+          ? JSON.parse(businessData.services)
+          : []
+    })
+
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: "Server error" })
+  }
+}
+
+// ================= GET BUSINESS BY ID (FOR PAYMENT PAGE) =================
+exports.getBusinessById = async (req, res) => {
+  try {
+    const business = await VendorBusiness.findByPk(req.params.id)
+
+    if (!business) {
+      return res.status(404).json({ message: "Business not found" })
+    }
+
+    res.json(business)
+
+  } catch (err) {
+    console.error("GET BUSINESS BY ID ERROR:", err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// ================= PROCESS PAYMENT =================
+
+
+exports.processPayment = async (req, res) => {
+  console.log("🔥 PROCESS PAYMENT CALLED")
+console.log("Vendor ID:", req.user.id)
+console.log("Business ID:", req.params.id)
+  try {
+    
+    const vendorId = req.user.id
+    const businessId = req.params.id
+    const { payment_method } = req.body
+
+    const business = await VendorBusiness.findByPk(businessId)
+
+    if (!business) {
+      return res.status(404).json({ message: "Business not found" })
+    }
+
+    const payment = await Payment.create({
+      payment_id: "PAY-" + Date.now(),
+      status: "paid",
+      vendor_id: vendorId,
+      business_id: businessId,
+      plan: business.service_type,
+      amount: business.membership_price,
+      payment_method,
+      payment_status: "paid",
+      admin_status: "pending",
+    })
+
+    res.json({
+      success: true,
+      message: "Payment recorded. Waiting for admin approval.",
+      payment,
+    })
+
+  } catch (err) {
+    console.error("PAYMENT ERROR:", err)
+    res.status(500).json({ message: "Payment failed" })
   }
 }

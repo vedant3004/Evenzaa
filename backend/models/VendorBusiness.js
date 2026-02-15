@@ -25,10 +25,21 @@ const VendorBusiness = sequelize.define(
       allowNull: false,
     },
 
-    price: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
+    category: {
+  type: DataTypes.STRING,
+  allowNull: true,
+},
+
+    price: {            // 🔥 SERVICE PRICE
+  type: DataTypes.INTEGER,
+  defaultValue: 0,
+},
+
+membership_price: {  // 🔥 PLAN PRICE
+  type: DataTypes.INTEGER,
+  defaultValue: 0,
+},
+
 
     city: {
       type: DataTypes.STRING,
