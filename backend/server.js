@@ -3,6 +3,7 @@ const cors = require("cors")
 const helmet = require("helmet")
 const rateLimit = require("express-rate-limit")
 require("dotenv").config()
+const app = express()
 
 const sequelize = require("./db")
 
@@ -17,9 +18,11 @@ const Payment = require("./models/Payment")
 const authRoutes = require("./routes/auth")
 const vendorRoutes = require("./routes/vendor")
 const bookingRoutes = require("./routes/booking") // ✅ MUST export router
-const adminRoutes = require("./routes/admin")     // 🔥 ADD THIS
+const adminRoutes = require("./routes/admin")   
+const reviewRoutes = require("./routes/review")  // 🔥 ADD THIS
 
-const app = express()
+
+
 
 // ================= SECURITY =================
 app.use(helmet())
@@ -31,6 +34,7 @@ const limiter = rateLimit({
   legacyHeaders: false,
 })
 app.use(limiter)
+
 
 // ================= CORE =================
 app.use(
@@ -101,6 +105,7 @@ Payment.belongsTo(VendorBusiness, {
 app.use("/api/auth", authRoutes)
 app.use("/api/vendor", vendorRoutes)
 app.use("/api/admin", adminRoutes)
+app.use("/api/reviews", reviewRoutes)
 
 // 🔥🔥 SAFETY CHECK (IMPORTANT)
 if (typeof bookingRoutes !== "function") {
