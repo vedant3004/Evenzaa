@@ -158,10 +158,32 @@ const fetchPayments = async () => {
       setBusinesses([])
     }
   }
+// ✅ LOAD & AUTO REFRESH PENDING BUSINESSES COUNT
+useEffect(() => {
+  fetchBusinesses()   // page load pe count laayega
+
+  const interval = setInterval(() => {
+    fetchBusinesses()  // har 15 sec me update
+  }, 15000)
+
+  return () => clearInterval(interval)
+}, [])
 
   useEffect(() => {
     if (view === "businesses") fetchBusinesses()
   }, [view])
+
+    // ✅ LOAD PENDING BUSINESSES COUNT ON PAGE LOAD
+  useEffect(() => {
+    fetchBusinesses()
+  }, [])
+
+
+  // ✅ LOAD PENDING COUNT ON PAGE LOAD
+useEffect(() => {
+  fetchBusinesses()
+}, [])
+
 
   // ================= APPROVE / REJECT BUSINESS =================
   const approveBusiness = async (id) => {

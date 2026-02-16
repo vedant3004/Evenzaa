@@ -14,7 +14,9 @@ export default function VendorLogin() {
   const router = useRouter()
   const { loginVendor } = useAuth()
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault()   // 🔥 prevents page reload
+
     if (!f.email || !f.password) {
       alert("Please enter email & password")
       return
@@ -29,6 +31,7 @@ export default function VendorLogin() {
       router.push("/vendor/dashboard")
     } catch (err) {
       console.error(err)
+      alert("Login failed")
     }
   }
 
@@ -50,34 +53,39 @@ export default function VendorLogin() {
           Login to manage your business & bookings
         </p>
 
-        <div className="space-y-4">
-          <input
-            type="email"
-            placeholder="Vendor Email"
-            className="input"
-            value={f.email}
-            onChange={(e) =>
-              setF({ ...f, email: e.target.value })
-            }
-          />
+        {/* ✅ FORM ADDED FOR ENTER KEY SUPPORT */}
+        <form onSubmit={handleLogin}>
 
-          <input
-            type="password"
-            placeholder="Password"
-            className="input"
-            value={f.password}
-            onChange={(e) =>
-              setF({ ...f, password: e.target.value })
-            }
-          />
-        </div>
+          <div className="space-y-4">
+            <input
+              type="email"
+              placeholder="Vendor Email"
+              className="input"
+              value={f.email}
+              onChange={(e) =>
+                setF({ ...f, email: e.target.value })
+              }
+            />
 
-        <button
-          onClick={handleLogin}
-          className="btn-primary w-full mt-6 text-lg"
-        >
-          Login to Dashboard
-        </button>
+            <input
+              type="password"
+              placeholder="Password"
+              className="input"
+              value={f.password}
+              onChange={(e) =>
+                setF({ ...f, password: e.target.value })
+              }
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="btn-primary w-full mt-6 text-lg"
+          >
+            Login to Dashboard
+          </button>
+
+        </form>
 
         <p className="text-center text-xs text-gray-500 mt-6">
           © {new Date().getFullYear()} EventZaa Vendor Panel

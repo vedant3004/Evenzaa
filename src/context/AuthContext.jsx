@@ -17,35 +17,64 @@ export function AuthProvider({ children }) {
   const router = useRouter()
   const pathname = usePathname()
 
+  /* ================= SAFE JSON PARSE ================= */
+  const safeParse = (data) => {
+    try {
+      return JSON.parse(data)
+    } catch {
+      return null
+    }
+  }
+
+  /* ================= TOKEN VALIDATION ================= */
+  const isValidJWT = (token) => {
+    return token && token.split(".").length === 3
+  }
+
   /* ================= LOAD SESSION ================= */
   useEffect(() => {
     const u = localStorage.getItem("eventzaa_user")
     const v = localStorage.getItem("evenzaa_vendor")
     const a = localStorage.getItem("evenzaa_admin")
 
-    if (a && a.split(".").length === 3) {
+    if (a && isValidJWT(a)) {
       setUser({
         role: "admin",
         username: "Admin",
         displayName: "Admin",
       })
     } else if (v) {
-      const vendor = JSON.parse(v)
-      setUser({
-        ...vendor,
-        role: "vendor",
-        displayName: vendor.name || vendor.business || "Vendor",
-      })
+      const vendor = safeParse(v)
+      if (vendor) {
+        setUser({
+          ...vendor,
+          role: "vendor",
+          displayName: vendor.name || vendor.business || "Vendor",
+        })
+      }
     } else if (u) {
-      const usr = JSON.parse(u)
-      setUser({
-        ...usr,
-        role: "user",
-        displayName: usr.name || "User",
-      })
+      const usr = safeParse(u)
+      if (usr) {
+        setUser({
+          ...usr,
+          role: "user",
+          displayName: usr.name || "User",
+        })
+      }
     }
 
     setLoading(false)
+  }, [])
+
+  /* ================= MULTI TAB SYNC ================= */
+  useEffect(() => {
+    const syncLogout = () => {
+      if (!localStorage.getItem("evenzaa_token")) {
+        setUser(null)
+      }
+    }
+    window.addEventListener("storage", syncLogout)
+    return () => window.removeEventListener("storage", syncLogout)
   }, [])
 
   /* ================= AUTO REDIRECT AFTER LOGIN ================= */
@@ -74,16 +103,30 @@ export function AuthProvider({ children }) {
   const isVendorPage = pathname.startsWith("/vendor")
   const isAdminPage = pathname.startsWith("/admin")
 
-  /* ================= TOKEN HELPER (🆕 ADD) ================= */
+  /* ================= TOKEN HELPER ================= */
   const getToken = () => {
     if (typeof window === "undefined") return null
     return localStorage.getItem("evenzaa_token")
   }
 
+  /* ================= FETCH WITH TIMEOUT ================= */
+  const fetchWithTimeout = async (url, options, timeout = 10000) => {
+    const controller = new AbortController()
+    const id = setTimeout(() => controller.abort(), timeout)
+
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    })
+
+    clearTimeout(id)
+    return res
+  }
+
   /* ================= USER LOGIN ================= */
   const login = async (data) => {
     try {
-      const res = await fetch(`${AUTH_API}/login`, {
+      const res = await fetchWithTimeout(`${AUTH_API}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -107,14 +150,14 @@ export function AuthProvider({ children }) {
       setUser(u)
       setOpen(false)
     } catch (err) {
-      alert(err.message)
+      alert(err.message || "Login failed")
     }
   }
 
   /* ================= USER REGISTER ================= */
   const register = async (data) => {
     try {
-      const res = await fetch(`${AUTH_API}/register`, {
+      const res = await fetchWithTimeout(`${AUTH_API}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -125,14 +168,14 @@ export function AuthProvider({ children }) {
 
       await login(data)
     } catch (err) {
-      alert(err.message)
+      alert(err.message || "Registration failed")
     }
   }
 
   /* ================= VENDOR LOGIN ================= */
   const loginVendor = async (data) => {
     try {
-      const res = await fetch(`${VENDOR_API}/login`, {
+      const res = await fetchWithTimeout(`${VENDOR_API}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -156,13 +199,13 @@ export function AuthProvider({ children }) {
       setUser(v)
       setOpen(false)
     } catch (err) {
-      alert(err.message)
+      alert(err.message || "Vendor login failed")
     }
   }
 
   /* ================= ADMIN LOGIN ================= */
   const loginAdmin = ({ token }) => {
-    if (!token || token.split(".").length !== 3) return
+    if (!isValidJWT(token)) return
 
     localStorage.setItem("evenzaa_admin", token)
     localStorage.setItem("evenzaa_token", token)
@@ -194,9 +237,7 @@ export function AuthProvider({ children }) {
         setOpen,
         isVendorPage,
         isAdminPage,
-
-        getToken, // ✅ IMPORTANT
-
+        getToken,
         login,
         register,
         loginVendor,

@@ -14,7 +14,9 @@ export default function AdminLogin() {
   const router = useRouter()
   const { loginAdmin } = useAuth() // 🔥 CENTRAL AUTH
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault()   // ✅ prevents page reload
+
     if (f.username !== ADMIN.username || f.password !== ADMIN.password) {
       return alert("Invalid Admin Credentials")
     }
@@ -76,27 +78,33 @@ export default function AdminLogin() {
           Secure access for EventZaa administrators
         </p>
 
-        <div className="space-y-4">
-          <input
-            placeholder="Admin Username"
-            className="input"
-            onChange={e => setF({ ...f, username: e.target.value })}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="input"
-            onChange={e => setF({ ...f, password: e.target.value })}
-          />
-        </div>
+        {/* ✅ FORM ADDED FOR ENTER KEY SUPPORT */}
+        <form onSubmit={handleLogin}>
 
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          className="btn-primary w-full mt-6 text-lg"
-        >
-          {loading ? "Logging in..." : "Login to Dashboard"}
-        </button>
+          <div className="space-y-4">
+            <input
+              placeholder="Admin Username"
+              className="input"
+              onChange={e => setF({ ...f, username: e.target.value })}
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              className="input"
+              onChange={e => setF({ ...f, password: e.target.value })}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full mt-6 text-lg"
+          >
+            {loading ? "Logging in..." : "Login to Dashboard"}
+          </button>
+
+        </form>
 
         <p className="text-center text-xs text-[#9CA3AF] mt-6">
           © {new Date().getFullYear()} EventZaa Admin Panel
