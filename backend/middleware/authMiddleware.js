@@ -42,8 +42,9 @@ const verifyToken = (req, res, next) => {
     // =====================================================
     // 🔐 NORMAL JWT VERIFY (USER / VENDOR / ADMIN)
     // =====================================================
-    console.log("Incoming token:", token)
-console.log("JWT Secret:", process.env.JWT_SECRET)
+console.log("Incoming token:", token)
+
+
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
 

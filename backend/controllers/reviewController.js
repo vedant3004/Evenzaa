@@ -1,4 +1,6 @@
-const db = require("../db") // tumhara mysql connection file
+const sequelize = require("../db")
+const { QueryTypes } = require("sequelize")
+
 
 // ADD REVIEW
 exports.addReview = async (req, res) => {
@@ -20,7 +22,10 @@ exports.addReview = async (req, res) => {
       VALUES (?, ?, ?, ?)
     `
 
-    await db.query(sql, [vendorId, userId, rating, comment])
+    await sequelize.query(sql, {
+  replacements: [vendorId, userId, rating, comment],
+  type: QueryTypes.INSERT,
+})
 
     res.status(201).json({ message: "Review added successfully" })
   } catch (error) {
@@ -81,7 +86,11 @@ exports.getVendorReviews = async (req, res) => {
       ORDER BY r.created_at DESC
     `
 
-    const [reviews] = await db.query(sql, [vendorId])
+    const reviews = await sequelize.query(sql, {
+  replacements: [vendorId],
+  type: QueryTypes.SELECT,
+})
+
 
     const avgSql = `
       SELECT AVG(rating) as avgRating, COUNT(*) as total
@@ -89,8 +98,11 @@ exports.getVendorReviews = async (req, res) => {
       WHERE vendor_id = ?
     `
 
-    const [avgData] = await db.query(avgSql, [vendorId])
-
+   const avgData = await sequelize.query(avgSql, {
+  replacements: [vendorId],
+  type: QueryTypes.SELECT,
+})
+ 
     res.json({
       reviews: reviews || [],
       avgRating: avgData?.[0]?.avgRating

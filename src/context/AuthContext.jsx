@@ -32,39 +32,46 @@ export function AuthProvider({ children }) {
   }
 
   /* ================= LOAD SESSION ================= */
-  useEffect(() => {
-    const u = localStorage.getItem("eventzaa_user")
-    const v = localStorage.getItem("evenzaa_vendor")
-    const a = localStorage.getItem("evenzaa_admin")
-
-    if (a && isValidJWT(a)) {
-      setUser({
-        role: "admin",
-        username: "Admin",
-        displayName: "Admin",
-      })
-    } else if (v) {
-      const vendor = safeParse(v)
-      if (vendor) {
-        setUser({
-          ...vendor,
-          role: "vendor",
-          displayName: vendor.name || vendor.business || "Vendor",
-        })
-      }
-    } else if (u) {
-      const usr = safeParse(u)
-      if (usr) {
-        setUser({
-          ...usr,
-          role: "user",
-          displayName: usr.name || "User",
-        })
-      }
-    }
-
+ useEffect(() => {
+  const token = localStorage.getItem("evenzaa_token")
+  if (!token) {
     setLoading(false)
-  }, [])
+    return
+  }
+
+  const u = localStorage.getItem("eventzaa_user")
+  const v = localStorage.getItem("evenzaa_vendor")
+  const a = localStorage.getItem("evenzaa_admin")
+
+  if (a && isValidJWT(a)) {
+    setUser({
+      role: "admin",
+      username: "Admin",
+      displayName: "Admin",
+    })
+  } else if (v) {
+    const vendor = safeParse(v)
+    if (vendor) {
+      setUser({
+        ...vendor,
+        role: "vendor",
+        displayName: vendor.name || vendor.business || "Vendor",
+      })
+    }
+  } else if (u) {
+    const usr = safeParse(u)
+    if (usr) {
+      setUser({
+        ...usr,
+        role: "user",
+        displayName: usr.name || "User",
+      })
+    }
+  }
+
+  setLoading(false)
+}, [])
+
 
   /* ================= MULTI TAB SYNC ================= */
   useEffect(() => {

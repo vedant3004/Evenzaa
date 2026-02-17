@@ -13,7 +13,7 @@ const API_BASE =
 export default function VendorDetailPage() {
   const { slug } = useParams()
   const router = useRouter()
-  const { user, setOpen } = useAuth()
+  const { user, setOpen, getToken } = useAuth()
 
   const [vendor, setVendor] = useState(null)
   const [reviews, setReviews] = useState([])
@@ -253,39 +253,44 @@ if (vendorId) {
           />
 
           <button
-            onClick={async () => {
-              if (!comment) return alert("Please enter comment")
-
-             const response = await fetch(`${API_BASE}/api/reviews`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-  body: JSON.stringify({
-    vendorId: vendor.id,
-    rating,
-    comment,
-  }),
-})
-
-const result = await response.json()
-
-if (!response.ok) {
-  alert(result.message || "Review failed")
-  return
-}
-
-setComment("")
-setRating(5)
-
-await fetchReviews(vendor.id)
+           onClick={async () => {
+ const token = getToken()
 
 
-              setComment("")
-              setRating(5)
-              fetchReviews(vendor.id)
-            }}
+  console.log("Sending token:", token)
+
+  if (!token) {
+    alert("Please login again")
+    return
+  }
+
+  const response = await fetch(`${API_BASE}/api/reviews`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      vendorId: vendor.id,
+      rating,
+      comment,
+    }),
+  })
+
+  const result = await response.json()
+
+  if (!response.ok) {
+    alert(result.message)
+    return
+  }
+
+  setComment("")
+  setRating(5)
+
+  await fetchReviews(vendor.id)
+}}
+
+
             className="btn-primary"
           >
             Submit Review
