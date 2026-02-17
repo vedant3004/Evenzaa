@@ -18,14 +18,16 @@ export default function FeaturedVendors() {
         const data = await res.json()
 
         // ✅ Only approved vendors
-        const approved = data.filter(v => v.approved === true)
+        // API already returns approved vendors
 
-        // ✅ Sort by rating DESC
-        const top = [...approved]
-          .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-          .slice(0, 4)
+const sorted = [...data]
+  .sort((a, b) => {
+    return Number(b.rating || 0) - Number(a.rating || 0)
+  })
+  .slice(0, 4)
 
-        setVendors(top)
+setVendors(sorted)
+
       } catch (err) {
         console.error("Featured fetch error:", err)
       }
@@ -84,7 +86,8 @@ export default function FeaturedVendors() {
               </h3>
 
               <p className="text-sm text-[#9CA3AF] mb-4">
-                ⭐ {v.rating || 4.5} Rating
+                ⭐ {Number(v.rating || 0).toFixed(1)} Rating
+
               </p>
 
               <Link
