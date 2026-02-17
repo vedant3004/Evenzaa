@@ -109,10 +109,12 @@ router.get(
 )
 
 // ALL APPROVED BUSINESSES
+// ALL APPROVED BUSINESSES (WITH RATING)
 router.get(
   "/businesses",
-  vendorController.getPublicBusinesses
+  vendorController.getAllBusinesses
 )
+
 
 // SINGLE BUSINESS BY SLUG
 router.get(
@@ -124,10 +126,10 @@ router.get(
 // ADMIN HARD DELETE PLACEHOLDER
 // =================================================
 // SINGLE BUSINESS BY SLUG
-router.get(
-  "/businesses/:slug",
-  vendorController.getBusinessBySlug
-)
+// router.get(
+//   "/businesses/:slug",
+//   vendorController.getBusinessBySlug
+// )
 
 // ================= PUBLIC: BUSINESSES BY CATEGORY =================
 router.get(

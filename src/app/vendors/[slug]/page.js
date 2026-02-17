@@ -31,7 +31,8 @@ const [comment, setComment] = useState("")
 
     setReviews(Array.isArray(data.reviews) ? data.reviews : [])
 
-    setAvgRating(data.avgRating)
+   setAvgRating(Number(data.avgRating || 0).toFixed(1))
+
     setTotalReviews(data.total)
   } catch (err) {
     console.error("Review fetch error", err)

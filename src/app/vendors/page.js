@@ -53,7 +53,9 @@ export default function VendorsPage() {
           location: v.city || "",
           price: v.price || 0,
           image: v.image || "/placeholder.jpg",
-          rating: v.rating || 4.8,
+          rating: parseFloat(v.rating || 0).toFixed(1),
+
+
           category: v.service_type || "",
         }))
 

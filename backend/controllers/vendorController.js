@@ -414,20 +414,27 @@ exports.rejectBusiness = async (req, res) => {
 }
 
 // ================= PUBLIC: GET APPROVED BUSINESSES =================
-exports.getPublicBusinesses = async (req, res) => {
+exports.getAllBusinesses = async (req, res) => {
   try {
-    const list = await VendorBusiness.findAll({
-      where: { approved: true },
-order: [["createdAt", "DESC"]],
-limit: 4,
-    })
+    const [businesses] = await sequelize.query(`
+      SELECT 
+        vb.*,
+        IFNULL(ROUND(AVG(r.rating),1), 0) as rating,
+        COUNT(r.id) as total_reviews
+      FROM vendorbusinesses vb
+      LEFT JOIN reviews r ON vb.id = r.vendor_id
+      WHERE vb.status = 'approved'
+      GROUP BY vb.id
+    `)
 
-    res.json(list)
-  } catch (err) {
-    console.error("GET PUBLIC BUSINESSES ERROR:", err)
-    res.status(500).json({ message: "Server error" })
+    res.json(businesses)
+  } catch (error) {
+    console.error("GET BUSINESSES ERROR:", error)
+    res.status(500).json({ message: "Server Error" })
   }
 }
+
+
 
 
 // ================= PUBLIC: GET BUSINESS BY SLUG =================
@@ -435,7 +442,7 @@ limit: 4,
 exports.getBusinessBySlug = async (req, res) => {
   try {
     const business = await VendorBusiness.findOne({
-      where: { slug: req.params.slug, approved: true },
+      where: { slug: req.params.slug, status: "approved" },
       include: [{ model: Vendor, attributes: ["id", "name", "email"] }],
     })
 
@@ -529,14 +536,18 @@ exports.getBusinessesByCategory = async (req, res) => {
   try {
     const { category } = req.params
 
-    console.log("CATEGORY REQUEST:", category)
-
-    const list = await VendorBusiness.findAll({
-      where: {
-        approved: true,
-        category: category,
-      },
-      order: [["createdAt", "DESC"]],
+    const [list] = await sequelize.query(`
+      SELECT 
+        vb.*,
+        IFNULL(ROUND(AVG(r.rating),1), 0) as rating,
+        COUNT(r.id) as total_reviews
+      FROM vendorbusinesses vb
+      LEFT JOIN reviews r ON vb.id = r.vendor_id
+      WHERE vb.status = 'approved'
+      AND vb.category = ?
+      GROUP BY vb.id
+    `, {
+      replacements: [category],
     })
 
     res.json(list)
@@ -545,3 +556,4 @@ exports.getBusinessesByCategory = async (req, res) => {
     res.status(500).json({ message: "Server error" })
   }
 }
+
