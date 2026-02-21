@@ -121,7 +121,11 @@ router.get(
   "/businesses/:slug",
   vendorController.getBusinessBySlug
 )
-
+// ================= PUBLIC: SEARCH =================
+router.get(
+  "/search",
+  vendorController.searchBusinesses
+)
 // =================================================
 // ADMIN HARD DELETE PLACEHOLDER
 // =================================================

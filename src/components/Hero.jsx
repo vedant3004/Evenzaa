@@ -3,14 +3,14 @@
 import Image from "next/image"
 import { useEffect, useRef, useState } from "react"
 import citiesByState from "../data/cities"
-import vendors from "../data/vendors"
+
 import { ChevronDown } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 
 export default function Hero() {
   const router = useRouter()
-
+const [vendors, setVendors] = useState([])
   const [cities, setCities] = useState([])
   const [location, setLocation] = useState("")
   const [search, setSearch] = useState("")
@@ -176,16 +176,33 @@ animate()
       () => setCities(citiesByState.Maharashtra || [])
     )
   }, [])
+  useEffect(() => {
+  if (!search || search.length < 2) {
+    setVendors([])
+    return
+  }
+
+  const fetchSearch = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/vendor/search?q=${search}`
+      )
+      const data = await res.json()
+      setVendors(data)
+    } catch (err) {
+      console.error("Search fetch error:", err)
+    }
+  }
+
+  const debounce = setTimeout(fetchSearch, 400)
+  return () => clearTimeout(debounce)
+
+}, [search])
 
   /* ===============================
      SEARCH SUGGESTIONS
   ================================ */
-  const suggestions = vendors.filter(
-    (v) =>
-      v.name.toLowerCase().includes(search.toLowerCase()) ||
-      v.service.toLowerCase().includes(search.toLowerCase()) ||
-      v.category.toLowerCase().includes(search.toLowerCase())
-  )
+
 
   const filteredCities = cities.filter((c) =>
     c.toLowerCase().startsWith(location.toLowerCase())
@@ -307,14 +324,14 @@ animate()
                   animate={{ opacity: 1, y: 0 }}
                   className="absolute z-20 bg-[#111827] shadow rounded-xl w-full mt-2 max-h-60 overflow-y-auto border border-[#1F2937]"
                 >
-                  {suggestions.length > 0 ? (
-                    suggestions.map((v) => (
+                  {vendors.length > 0 ? (
+  vendors.map((v) => (
                       <div
                         key={v.id}
                         onClick={() => router.push(`/vendors/${v.slug}`)}
                         className="px-4 py-2 cursor-pointer hover:bg-[#0F172A] text-white"
                       >
-                        {v.name} —{" "}
+                       {v.business_name} —{" "}
                         <span className="text-sm text-[#9CA3AF]">
                           {v.category}
                         </span>

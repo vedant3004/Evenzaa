@@ -556,4 +556,41 @@ exports.getBusinessesByCategory = async (req, res) => {
     res.status(500).json({ message: "Server error" })
   }
 }
+// ================= PUBLIC: SEARCH BUSINESSES =================
+exports.searchBusinesses = async (req, res) => {
+  try {
+    const { q } = req.query
 
+    if (!q) {
+      return res.json([])
+    }
+
+    const [results] = await sequelize.query(`
+      SELECT 
+        vb.id,
+        vb.business_name,
+        vb.slug,
+        vb.category,
+        vb.city,
+        vb.service_type
+      FROM VendorBusinesses vb
+      WHERE vb.status = 'approved'
+      AND (
+        vb.business_name LIKE :search
+        OR vb.category LIKE :search
+        OR vb.service_type LIKE :search
+        OR vb.city LIKE :search
+      )
+      ORDER BY vb.createdAt DESC
+      LIMIT 10
+    `, {
+      replacements: { search: `%${q}%` }
+    })
+
+    res.json(results)
+
+  } catch (err) {
+    console.error("SEARCH ERROR:", err)
+    res.status(500).json({ message: "Server error" })
+  }
+}
