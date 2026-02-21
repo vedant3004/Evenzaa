@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Crown, Star, Shield } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 const API = "http://localhost:5000/api/vendor"
@@ -9,7 +8,9 @@ const API = "http://localhost:5000/api/vendor"
 export default function VendorRegister() {
   const router = useRouter()
 
-  const [plan, setPlan] = useState(null)
+  // Default plan fixed to Gold
+  const plan = "Gold"
+
   const [loading, setLoading] = useState(false)
 
   const [form, setForm] = useState({
@@ -17,69 +18,6 @@ export default function VendorRegister() {
     username: "",
     password: "",
   })
-
-  const plans = [
-    {
-      name: "Bronze",
-      icon: Shield,
-      price: "₹499 / month",
-      perks: ["Basic Listing", "Limited Leads", "Email Support"],
-    },
-    {
-      name: "Silver",
-      icon: Star,
-      price: "₹999 / month",
-      perks: ["Featured Listing", "More Leads", "Priority Support"],
-    },
-    {
-      name: "Gold",
-      icon: Crown,
-      price: "₹1999 / month",
-      perks: ["Top Placement", "Unlimited Leads", "Dedicated Manager"],
-    },
-  ]
-
-  /* ================= PLAN SELECTION ================= */
-  if (!plan) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0B1120] px-4">
-
-        <h2 className="text-3xl font-extrabold mb-10 text-white">
-          Choose Your Membership
-        </h2>
-
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl w-full">
-          {plans.map((p) => {
-            const Icon = p.icon
-            return (
-              <div
-                key={p.name}
-                className="bg-[#111827] border border-[#1F2937] p-8 rounded-3xl shadow-xl text-center hover:scale-105 transition cursor-pointer"
-                onClick={() => setPlan(p.name)}
-              >
-                <div className="flex justify-center mb-4">
-                  <div className="w-14 h-14 rounded-full bg-cyan-900/40 text-cyan-400 flex items-center justify-center shadow-inner">
-                    <Icon size={26} />
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-bold text-white">{p.name}</h3>
-                <p className="text-cyan-400 font-semibold my-2">
-                  {p.price}
-                </p>
-
-                <ul className="text-gray-400 text-sm space-y-1">
-                  {p.perks.map((x) => (
-                    <li key={x}>✔ {x}</li>
-                  ))}
-                </ul>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    )
-  }
 
   /* ================= REGISTER HANDLER ================= */
   const handleRegister = async () => {
@@ -98,7 +36,7 @@ export default function VendorRegister() {
           name: form.business,
           email: form.username,
           password: form.password,
-          service_type: plan,
+          service_type: plan, // Always Gold
           price: 0,
         }),
       })
@@ -125,7 +63,7 @@ export default function VendorRegister() {
       <div className="bg-[#0F172A] border border-[#1F2937] p-10 rounded-3xl shadow-2xl w-full max-w-md">
 
         <h2 className="text-3xl font-extrabold text-center mb-2 text-white">
-          {plan} Membership Registration
+          Gold Membership Registration
         </h2>
 
         <p className="text-center text-gray-400 mb-8">
